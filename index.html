@@ -3,102 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>雪球計畫 | 記帳小天使</title>
+  <title>記帳小天使 | Luke</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root { --primary: #deff9a; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Segoe UI', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      margin: 0; 
+      padding: 20px;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
     .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; box-sizing: border-box; border: 1px solid #333; }
-    h1 { font-size: 26px; margin: 0 0 20px; color: var(--primary); text-align: center; }
-    .input-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-size: 13px; color: #888; }
-    input, select { width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 10px; color: #fff; font-size: 16px; box-sizing: border-box; }
-    #submit-btn { background: var(--primary); color: #000; width: 100%; padding: 15px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    #status { margin-top: 15px; text-align: center; font-size: 14px; color: var(--primary); white-space: pre-line; }
-    #history-list { margin-top: 20px; width: 100%; max-height: 200px; overflow-y: auto; font-size: 13px; }
-    .history-item { background: #222; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--primary); display: flex; justify-content: space-between; }
+    h1 { font-size: 28px; margin: 0 0 20px; color: var(--primary); text-align: center; font-weight: 500; }
+    .input-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-size: 14px; color: #888; }
+    input, select { width: 100%; background: #222; border: 1px solid #444; padding: 15px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
+    input:focus { border-color: var(--primary); outline: none; }
+    .photo-btn { background: #333; border: 2px dashed #555; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
+    #submit-btn { background: var(--primary); color: #000; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+    #delete-btn { background: #3a1c1c; color: #ff6b6b; width: 100%; padding: 15px; border-radius: 50px; border: 1px solid #ff6b6b; font-size: 16px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+    #status { margin-top: 20px; text-align: center; font-size: 15px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.6; font-weight: 500; }
+    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444;}
+    #history-section { margin-top: 30px; border-top: 1px dashed #444; padding-top: 20px; width: 100%; }
+    #history-list { max-height: 250px; overflow-y: auto; }
+    .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
+    .history-item .time { color: #666; font-size: 11px; }
   </style>
 </head>
 <body>
   <div class="app-card">
-    <h1><i class="fa-solid fa-seedling"></i> 記帳小天使</h1>
+    <h1><i class="fa-solid fa-calculator"></i> 記帳小天使</h1>
     <form id="payForm">
       <div class="input-group">
+        <label>交易類別</label>
         <select name="type" id="type-selector">
           <option value="支出">📉 支出</option>
           <option value="收入">💰 收入</option>
-          <option value="墊付">⚖️ 分帳/墊付</option>
+          <option value="墊付">⚖️ 分帳 / 墊付</option>
         </select>
       </div>
-      <div class="input-group"><input type="text" name="item" placeholder="項目內容" required></div>
-      <div class="input-group"><input type="text" name="amount" placeholder="金額 (如: 5000JPY)" required></div>
-      <div id="split-group" style="display: none; gap: 10px; margin-bottom:15px;">
-        <input type="number" name="people" placeholder="人數" value="1">
-        <input type="text" name="payer" placeholder="墊付人" value="自己">
+      <div class="input-group"><label>項目內容</label><input type="text" name="item" placeholder="如：好市多、午餐、藥妝" required></div>
+      <div class="input-group"><label>金額 (支援幣別)</label><input type="text" name="amount" placeholder="如：1200 或 5000JPY" required></div>
+      <div class="input-group" id="split-group" style="display: none; gap: 15px;">
+        <div style="flex: 1;"><label>人數</label><input type="number" name="people" value="1"></div>
+        <div style="flex: 1;"><label>墊付人</label><input type="text" name="payer" value="自己"></div>
       </div>
-      <div class="input-group"><input type="text" name="payment" placeholder="付款方式 (預設現金)"></div>
+      <div class="input-group"><label>付款方式 / 帳戶</label><input type="text" name="payment" placeholder="未填預設為現金"></div>
       <div class="input-group">
-        <div style="background:#333; padding:15px; border-radius:10px; text-align:center; cursor:pointer;" onclick="document.getElementById('photoInput').click()">📸 拍收據</div>
-        <input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="compressImage(this)">
+        <label>照片附件</label>
+        <div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據或明細</span></div>
+        <input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview">
       </div>
-      <button type="button" id="submit-btn" onclick="sendData()">送出紀錄</button>
+      <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
+      <button type="button" id="submit-btn" onclick="uploadData()">確認送出資料</button>
+      <button type="button" id="delete-btn" onclick="deleteRecord()">撤銷最後一筆</button>
       <div id="status"></div>
     </form>
-    <div id="history-list"></div>
+    <div id="history-section">
+      <div style="color: #888; font-size: 13px; margin-bottom: 12px;">☁️ 雲端最近 20 筆紀錄</div>
+      <div id="history-list"></div>
+    </div>
   </div>
 
   <script>
-    // 🔥 重要：換成你的 GAS 網址
+    // 🔥 重要：換成你的 GAS 部署網址 (結尾要是 /exec)
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
 
-    function sendData() {
-      const form = document.getElementById('payForm'), btn = document.getElementById('submit-btn'), status = document.getElementById('status');
-      btn.disabled = true; status.innerText = "🚀 同步中...";
-      
-      const payload = {
-        source: 'webapp', action: 'submit',
-        data: {
-          type: form.type.value, item: form.item.value, amount: form.amount.value,
-          payment: form.payment.value, people: form.people.value, note: form.note.value,
-          photoBase64: currentPhotoBase64
-        }
-      };
-
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(r => r.text()).then(msg => {
-          status.innerText = msg; form.reset(); currentPhotoBase64 = "";
-          btn.disabled = false; loadHistory();
-        }).catch(e => { status.innerText = "連線失敗"; btn.disabled = false; });
-    }
-
-    function loadHistory() {
-      fetch(API_URL, { method: 'POST', body: JSON.stringify({source:'webapp', action:'getHistory'}) })
-        .then(r => r.json()).then(data => {
-          document.getElementById('history-list').innerHTML = data.map(h => `<div class="history-item"><span>${h.text}</span><span style="color:#666">${h.time}</span></div>`).join('');
-        });
+    // 🌟 終極連線引擎：加入繞過 Google 防火牆的 headers
+    function callAPI(action, data) {
+      const payload = { source: 'webapp', action: action, data: data || {} };
+      return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 破解 CORS 跨域限制的關鍵
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      });
     }
 
     let currentPhotoBase64 = "";
-    function compressImage(input) {
-      if (!input.files[0]) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX = 1200; let w = img.width, h = img.height;
-          if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
-          document.getElementById('status').innerText = "📸 照片已就緒";
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(input.files[0]);
+    window.onload = function() { refreshCloudHistory(); };
+
+    function refreshCloudHistory() {
+      callAPI('getHistory', {})
+        .then(res => res.json())
+        .then(history => {
+          const list = document.getElementById('history-list');
+          if(!history || history.length === 0) { list.innerHTML = '暫無資料'; return; }
+          list.innerHTML = history.map(h => `<div class="history-item"><span>${h.text}</span><span class="time">${h.time}</span></div>`).join('');
+        }).catch(err => {
+          document.getElementById('history-list').innerHTML = '<span style="color:#ff6b6b;">無法載入歷史紀錄，請確認 GAS 網址與部署版本。</span>';
+        });
     }
-    window.onload = loadHistory;
-    document.getElementById('type-selector').onchange = e => document.getElementById('split-group').style.display = (e.target.value==='墊付'?'flex':'none');
+
+    document.getElementById('type-selector').addEventListener('change', function(e) {
+      document.getElementById('split-group').style.display = (e.target.value === '墊付') ? 'flex' : 'none';
+    });
+
+    function previewAndCompressImage(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var img = new Image();
+          img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var MAX = 1920, w = img.width, h = img.height;
+            if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, w, h);
+            currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.9);
+            document.getElementById('preview').src = currentPhotoBase64;
+            document.getElementById('preview').style.display = 'block';
+            document.getElementById('photo-label').innerText = "已就緒";
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function uploadData() {
+      const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
+      if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; return; }
+      btn.disabled = true; status.innerText = "🚀 同步雲端中...";
+      
+      const data = { type: form.type.value, item: form.item.value, amount: form.amount.value, payment: form.payment.value, note: form.note.value, photoBase64: currentPhotoBase64, people: form.people.value, payer: form.payer.value };
+      
+      callAPI('submit', data)
+        .then(res => res.text())
+        .then(resultMsg => {
+          status.innerText = resultMsg; 
+          form.reset(); currentPhotoBase64 = "";
+          document.getElementById('preview').style.display = 'none';
+          document.getElementById('split-group').style.display = 'none';
+          btn.disabled = false; 
+          refreshCloudHistory();
+        }).catch(err => { status.innerText = "❌ 連線失敗，請稍後再試"; btn.disabled = false; });
+    }
+
+    function deleteRecord() {
+      if(!confirm("確定撤銷雲端最後一筆？")) return;
+      document.getElementById('status').innerText = "🗑️ 處理中...";
+      
+      callAPI('delete', {})
+        .then(res => res.text())
+        .then(resultMsg => {
+          document.getElementById('status').innerText = resultMsg; 
+          refreshCloudHistory();
+        }).catch(err => { document.getElementById('status').innerText = "❌ 撤銷失敗"; });
+    }
   </script>
 </body>
 </html>
