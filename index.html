@@ -21,7 +21,6 @@
     input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
     input:focus, select:focus { border-color: var(--primary); outline: none; }
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
-    #currency-hint { font-size: 11px; color: var(--water); margin-top: 5px; display: none; }
     .photo-btn { background: #333; border: 2px dashed #555; height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
     .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; padding-left: 15px; }
     #submit-btn { background: var(--primary); color: #fff; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; position: relative; overflow: hidden; }
@@ -54,17 +53,16 @@
           <label style="margin:0;">金額</label>
           <label style="margin:0; color:var(--primary); font-size:12px; cursor:pointer;"><input type="checkbox" id="currency-toggle"> 外幣模式</label>
         </div>
-        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：1200" required autocomplete="off">
-      </div>
+        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999 或 1689" required autocomplete="off">
+        </div>
       <div id="split-group" style="display: none; gap: 15px;" class="input-group">
         <div style="flex: 1;"><label>人數</label><input type="number" name="people" value="1" onfocus="if(this.value==='1') this.value='';" onblur="if(this.value.trim()==='') this.value='1';"></div>
         <div style="flex: 1;"><label>墊付人</label><input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"><datalist id="payer-list"></datalist></div>
       </div>
-      <div class="input-group"><label>付款方式</label><input type="text" id="payment-input" name="payment" placeholder="未填預設為現金"></div>
+      <div class="input-group"><label>付款方式 / 帳戶</label><input type="text" id="payment-input" name="payment" placeholder="未填預設為現金"></div>
       <div class="input-group"><label>照片附件</label><div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
       <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
-      
       <div id="status"></div>
     </form>
     <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 最近 20 筆紀錄</div><div id="history-list"></div></div>
@@ -118,10 +116,17 @@
       document.getElementById('payment-input').placeholder = isS ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
     });
 
+    // 🌟 修正點 4：外幣金額提示範例變更
     document.getElementById('currency-toggle').addEventListener('change', e => {
-      const amt = document.getElementById('amount-input'), hint = document.getElementById('currency-hint');
-      if (e.target.checked) { amt.removeAttribute('inputmode'); amt.placeholder = '例如: 999USD 或 90000KRW'; hint.style.display = 'block'; }
-      else { amt.setAttribute('inputmode', 'decimal'); amt.placeholder = '如：999 或 1689'; hint.style.display = 'none'; }
+      const amt = document.getElementById('amount-input');
+      if (e.target.checked) { 
+        amt.removeAttribute('inputmode'); 
+        amt.placeholder = '如：999USD 或 90000KRW'; 
+      }
+      else { 
+        amt.setAttribute('inputmode', 'decimal'); 
+        amt.placeholder = '如：999 或 1689'; 
+      }
     });
 
     let currentPhoto = "";
@@ -155,27 +160,25 @@
       })
       .then(res => res.text())
       .then(msg => {
-        // 🌟 1. 將包含分帳結果的訊息保留在畫面上！
         status.innerText = msg;
         
-        // 🌟 2. 只清空輸入框，不洗掉網頁
         form.reset(); 
         form.people.value = "1";
         form.payer.value = "Luke";
         document.getElementById('currency-toggle').checked = false;
-        document.getElementById('currency-hint').style.display = 'none';
+        
+        // 🌟 修正點 3：重置時將提示文字洗回預設
         document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
         document.getElementById('amount-input').placeholder = '如：999 或 1689';
+        
         document.getElementById('payment-input').placeholder = '未填預設為現金';
         document.getElementById('split-group').style.display = 'none';
 
-        // 🌟 3. 清空照片預覽
         currentPhoto = "";
         document.getElementById('preview').src = "";
         document.getElementById('preview').style.display = 'none';
         document.getElementById('photo-label').innerText = "拍攝收據";
 
-        // 🌟 4. 延遲 1.5 秒再抓歷史紀錄，給 Google 試算表存檔的時間
         setTimeout(() => {
           refreshCloudHistory();
           loadAutocomplete();
@@ -186,7 +189,6 @@
         console.error(err);
       })
       .finally(() => {
-        // 🌟 5. 無論成功或失敗，絕對把按鈕解鎖，確保可以連續輸入
         btn.disabled = false;
       });
     }
