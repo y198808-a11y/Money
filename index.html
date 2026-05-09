@@ -185,7 +185,7 @@
       if (window.scrollY === 0 && touchStartY > 0) {
         let touchEndY = e.changedTouches[0].clientY;
         // 如果手指向下大幅滑動超過 150px
-        if (touchEndY - touchStartY > 150) { 
+        if (touchEndY - touchStartY > 100) { 
           document.getElementById('status').innerText = "🔄 畫面更新中...";
           // 延遲 0.3 秒後重新載入網頁，讓視覺更順暢
           setTimeout(() => {
