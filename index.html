@@ -26,9 +26,9 @@
     
     .photo-btn { background: #333; border: 2px dashed #555; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
     
-    /* 🌟 修復 2：水木相生佈局，將垃圾桶改為深海藍 (#1A365D)，象徵淨化與平穩情緒 */
+    /* 深海藍垃圾桶 (#1A365D)，象徵淨化與平穩情緒 */
     .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; padding-left: 15px; transition: color 0.2s; }
-    .delete-icon:active { color: #2C5282; } /* 點擊時切換為經典藍增加互動感 */
+    .delete-icon:active { color: #2C5282; }
 
     /* 漣漪按鈕設定 */
     #submit-btn { 
@@ -76,8 +76,8 @@
       <div class="input-group">
         <label>交易類別</label>
         <select name="type" id="type-selector">
-          <option value="支出">📉 支出</option>
-          <option value="收入">💰 收入</option>
+          <option value="支出">🌱 支出</option>
+          <option value="收入">🌊 收入</option>
           <option value="墊付">⚖️ 分帳 / 墊付</option>
         </select>
       </div>
@@ -227,7 +227,6 @@
         status.innerText = msg; 
         form.reset(); 
         
-        // 🌟 修復 1：送出後重置預設值為 Luke
         form.people.value = "1";
         form.payer.value = "Luke"; 
         document.getElementById('payment-input').placeholder = '未填預設為現金';
@@ -244,13 +243,4 @@
       });
     }
 
-    let touchStartY = 0;
-    document.addEventListener('touchstart', e => { if (window.scrollY === 0) touchStartY = e.touches[0].clientY; }, {passive: true});
-    document.addEventListener('touchend', e => {
-      if (window.scrollY === 0 && touchStartY > 0 && e.changedTouches[0].clientY - touchStartY > 150) {
-        document.getElementById('status').innerText = "🔄 更新中..."; setTimeout(() => location.reload(), 300);
-      } touchStartY = 0;
-    });
-  </script>
-</body>
-</html>
+    let touch
