@@ -7,26 +7,62 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
-  <title>記帳小天使</title>
+  <title>雪球計畫記帳本</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    :root { --primary: #deff9a; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; }
+    /* 🌟 修復 1：按鈕色溫微調，改為純淨、安定心神的翠綠色 (#1a9c39)，強化木能量，去除螢光土味 */
+    :root { --primary: #1a9c39; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.5); }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
     .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; }
     h1 { font-size: 28px; margin: 0 0 15px; color: var(--primary); text-align: center; }
     .input-group { margin-bottom: 18px; }
     label { display: block; margin-bottom: 8px; font-size: 13px; color: #888; }
     
-    /* 🌟 修正 CSS：限定只有文字與數字框套用全寬與背景設定，避免影響打勾方塊 */
     input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
     input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--primary); outline: none; }
     input::-webkit-calendar-picker-indicator { display: none !important; }
     
-    /* 🌟 新增外幣開關專屬樣式 */
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); margin: 0; cursor: pointer; }
     
     .photo-btn { background: #333; border: 2px dashed #555; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
-    #submit-btn { background: var(--primary); color: #000; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 5px; cursor: pointer; }
+    
+    /* 🌟 配合翠綠色調整垃圾桶顏色，使其視覺更安穩 */
+    .delete-icon { color: #cc3333; font-size: 18px; cursor: pointer; padding-left: 15px; }
+
+    /* 🌟 修復 2：增加「水」的動態暗示 - 漣漪動畫效果 */
+    #submit-btn { 
+      background: var(--primary); 
+      color: #fff; /* 翠綠按鈕配白字更安穩 */
+      width: 100%; 
+      padding: 18px; 
+      border-radius: 50px; 
+      border: none; 
+      font-size: 18px; 
+      font-weight: bold; 
+      margin-top: 5px; 
+      cursor: pointer; 
+      position: relative; /* 用於定位漣漪 */
+      overflow: hidden; /* 確保漣漪不會跑出按鈕 */
+      transition: background 0.3s;
+    }
+    
+    /* 漣漪本體 (水滴落下意念) */
+    .ripple {
+      position: absolute;
+      background: var(--wave); /* 淡藍色水波 */
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple-animation 0.6s linear;
+      pointer-events: none; /* 防止漣漪阻擋點擊 */
+    }
+
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
     #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
     #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; }
     #history-section { margin-top: 25px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
@@ -34,12 +70,11 @@
     .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
     .history-item-content { display: flex; flex-direction: column; gap: 3px; flex: 1; }
     .history-item .time { color: #888; font-size: 11px; }
-    .delete-icon { color: #ff6b6b; font-size: 18px; cursor: pointer; padding-left: 15px; }
   </style>
 </head>
 <body>
   <div class="app-card">
-    <h1><i class="fa-solid fa-calculator"></i> 記帳小天使</h1>
+    <h1><i class="fa-solid fa-calculator"></i> 韋杰記帳</h1>
     <form id="payForm">
       <div class="input-group">
         <label>交易類別</label>
@@ -62,7 +97,7 @@
             <input type="checkbox" id="currency-toggle"> 外幣模式
           </label>
         </div>
-        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999" required autocomplete="off">
+        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999 或 1689" required autocomplete="off">
       </div>
 
       <div id="split-group" style="display: none; gap: 15px;" class="input-group">
@@ -72,7 +107,7 @@
         </div>
         <div style="flex: 1;">
           <label>墊付人</label>
-          <input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
+          <input type="text" name="payer" value="自己" list="payer-list" autocomplete="off" onfocus="if(this.value==='自己') this.value='';" onblur="if(this.value.trim()==='') this.value='自己';">
           <datalist id="payer-list"></datalist>
         </div>
       </div>
@@ -92,20 +127,41 @@
         <label>備註</label>
         <input type="text" name="note" placeholder="補充細節...">
       </div>
-      <button type="button" id="submit-btn" onclick="uploadData()">確認送出資料</button>
+      <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
       <div id="status"></div>
     </form>
     <div id="history-section">
-      <div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 雲端最近 20 筆紀錄</div>
+      <div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 最近 20 筆紀錄</div>
       <div id="history-list"></div>
     </div>
   </div>
 
   <script>
+    // 🔥 重要：請將下方替換為你的 GAS 網址
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
 
     function callAPI(action, data) {
       return fetch(API_URL, { method: 'POST', body: JSON.stringify({ source: 'webapp', action: action, data: data || {} }) });
+    }
+
+    // 🌟 韋杰專屬：水滴漣漪起動函數 (水能量)
+    function createRipple(event) {
+      const btn = event.currentTarget;
+      const ripple = document.createElement("span");
+      const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+      const radius = diameter / 2;
+
+      ripple.style.width = ripple.style.height = `${diameter}px`;
+      // 計算相對於按鈕內的點擊位置，讓漣漪從手指點擊處散開
+      ripple.style.left = `${event.clientX - btn.offsetLeft - radius}px`;
+      ripple.style.top = `${event.clientY - btn.offsetTop - radius}px`;
+      ripple.className = "ripple";
+
+      // 如果按鈕內已有漣漪，先移除，確保單次點擊只有一滴水
+      const oldRipple = btn.getElementsByClassName("ripple")[0];
+      if (oldRipple) { oldRipple.remove(); }
+
+      btn.appendChild(ripple);
     }
 
     let currentPhotoBase64 = "";
@@ -130,7 +186,7 @@
     }
 
     function deleteSpecificRecord(rowNum, itemName) {
-      if(!confirm(`確定刪除「${itemName}」這筆紀錄嗎？`)) return;
+      if(!confirm(`確定刪除「${itemName}」？`)) return;
       document.getElementById('status').innerText = "🗑️ 刪除中...";
       callAPI('deleteRow', { row: rowNum }).then(res => res.text()).then(msg => {
         document.getElementById('status').innerText = msg; refreshCloudHistory();
@@ -140,18 +196,17 @@
     document.getElementById('type-selector').addEventListener('change', e => {
       const isSplit = e.target.value === '墊付';
       document.getElementById('split-group').style.display = isSplit ? 'flex' : 'none';
-      document.getElementById('payment-input').placeholder = isSplit ? '未填預設為現金 (朋友墊付不限制)' : '未填預設為現金';
+      document.getElementById('payment-input').placeholder = isSplit ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
     });
 
-    // 🌟 外幣開關邏輯切換
     document.getElementById('currency-toggle').addEventListener('change', e => {
       const amtInput = document.getElementById('amount-input');
       if (e.target.checked) {
-        amtInput.removeAttribute('inputmode'); // 解除九宮格限制
+        amtInput.removeAttribute('inputmode');
         amtInput.placeholder = '如：999USD 或 90000KRW';
       } else {
-        amtInput.setAttribute('inputmode', 'decimal'); // 恢復九宮格
-        amtInput.placeholder = '如：999';
+        amtInput.setAttribute('inputmode', 'decimal');
+        amtInput.placeholder = '如：999 或 1689';
       }
     });
 
@@ -171,22 +226,21 @@
 
     function uploadData() {
       const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
-      if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; return; }
-      btn.disabled = true; status.innerText = "🚀 同步雲端中...";
+      if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; btn.disabled = false; return; }
+      btn.disabled = true; status.innerText = "🚀 資料匯聚成河中...";
+      
       callAPI('submit', { type: form.type.value, item: form.item.value, amount: form.amount.value, payment: form.payment.value, note: form.note.value, photoBase64: currentPhotoBase64, people: form.people.value, payer: form.payer.value })
       .then(res => res.text()).then(msg => {
         status.innerText = msg; 
         form.reset(); 
         
-        // 🌟 重置表單狀態 (確保送出後一切歸位)
+        // 重置預設值
         form.people.value = "1";
-        form.payer.value = "Luke"; 
+        form.payer.value = "自己"; 
         document.getElementById('payment-input').placeholder = '未填預設為現金';
-        
-        // 🌟 重置外幣開關與金額輸入框
         document.getElementById('currency-toggle').checked = false;
         document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
-        document.getElementById('amount-input').placeholder = '如：1200';
+        document.getElementById('amount-input').placeholder = '如：999 或 1689';
 
         currentPhotoBase64 = ""; 
         document.getElementById('preview').style.display = 'none'; 
