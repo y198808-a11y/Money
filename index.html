@@ -16,9 +16,15 @@
     h1 { font-size: 28px; margin: 0 0 15px; color: var(--primary); text-align: center; }
     .input-group { margin-bottom: 18px; }
     label { display: block; margin-bottom: 8px; font-size: 13px; color: #888; }
-    input, select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
-    input:focus { border-color: var(--primary); outline: none; }
+    
+    /* 🌟 修正 CSS：限定只有文字與數字框套用全寬與背景設定，避免影響打勾方塊 */
+    input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--primary); outline: none; }
     input::-webkit-calendar-picker-indicator { display: none !important; }
+    
+    /* 🌟 新增外幣開關專屬樣式 */
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); margin: 0; cursor: pointer; }
+    
     .photo-btn { background: #333; border: 2px dashed #555; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
     #submit-btn { background: var(--primary); color: #000; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 5px; cursor: pointer; }
     #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
@@ -48,10 +54,17 @@
         <input type="text" name="item" list="item-list" placeholder="如：好市多、午餐、藥妝" autocomplete="off" required>
         <datalist id="item-list"></datalist>
       </div>
+      
       <div class="input-group">
-        <label>金額 (支援外幣)</label>
-        <input type="text" name="amount" inputmode="decimal" placeholder="如：200、5000USD、90000KRW" required>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="margin-bottom: 0;">金額</label>
+          <label style="margin-bottom: 0; color: var(--primary); display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" id="currency-toggle"> 外幣模式
+          </label>
+        </div>
+        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：1200" required autocomplete="off">
       </div>
+
       <div id="split-group" style="display: none; gap: 15px;" class="input-group">
         <div style="flex: 1;">
           <label>人數</label>
@@ -130,6 +143,18 @@
       document.getElementById('payment-input').placeholder = isSplit ? '未填預設為現金 (朋友墊付不限制)' : '未填預設為現金';
     });
 
+    // 🌟 外幣開關邏輯切換
+    document.getElementById('currency-toggle').addEventListener('change', e => {
+      const amtInput = document.getElementById('amount-input');
+      if (e.target.checked) {
+        amtInput.removeAttribute('inputmode'); // 解除九宮格限制
+        amtInput.placeholder = '如：5000JPY 或 200USD';
+      } else {
+        amtInput.setAttribute('inputmode', 'decimal'); // 恢復九宮格
+        amtInput.placeholder = '如：1200';
+      }
+    });
+
     function previewAndCompressImage(input) {
       if (input.files && input.files[0]) {
         var reader = new FileReader(); reader.onload = e => {
@@ -153,10 +178,15 @@
         status.innerText = msg; 
         form.reset(); 
         
-        // 🌟 重置後手動把預設值填回來
+        // 🌟 重置表單狀態 (確保送出後一切歸位)
         form.people.value = "1";
         form.payer.value = "Luke"; 
         document.getElementById('payment-input').placeholder = '未填預設為現金';
+        
+        // 🌟 重置外幣開關與金額輸入框
+        document.getElementById('currency-toggle').checked = false;
+        document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
+        document.getElementById('amount-input').placeholder = '如：1200';
 
         currentPhotoBase64 = ""; 
         document.getElementById('preview').style.display = 'none'; 
