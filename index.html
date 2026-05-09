@@ -2,35 +2,33 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>記帳小天使 | Luke</title>
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <title>記帳小天使</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root { --primary: #deff9a; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; }
-    
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; }
-    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; box-sizing: border-box; border: 1px solid #333; }
-    h1 { font-size: 28px; margin: 0 0 20px; color: var(--primary); text-align: center; font-weight: 500; }
-    .input-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-size: 14px; color: #888; }
-    input, select { width: 100%; background: #222; border: 1px solid #444; padding: 15px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
+    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; }
+    h1 { font-size: 28px; margin: 0 0 15px; color: var(--primary); text-align: center; }
+    .input-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-size: 13px; color: #888; }
+    input, select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
     input:focus { border-color: var(--primary); outline: none; }
     input::-webkit-calendar-picker-indicator { display: none !important; }
-
-    .photo-btn { background: #333; border: 2px dashed #555; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
-    #submit-btn { background: var(--primary); color: #000; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-    #status { margin-top: 20px; text-align: center; font-size: 15px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.6; font-weight: 500; }
-    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444;}
-    #history-section { margin-top: 30px; border-top: 1px dashed #444; padding-top: 20px; width: 100%; }
+    .photo-btn { background: #333; border: 2px dashed #555; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
+    #submit-btn { background: var(--primary); color: #000; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 5px; cursor: pointer; }
+    #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
+    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; }
+    #history-section { margin-top: 25px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
     #history-list { max-height: 250px; overflow-y: auto; }
-    
-    /* 🌟 新增的歷史紀錄垃圾桶排版 */
     .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
-    .history-item-content { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .history-item .time { color: #888; font-size: 12px; }
-    .delete-icon { color: #ff6b6b; font-size: 18px; cursor: pointer; padding: 5px 0 5px 15px; }
+    .history-item-content { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .history-item .time { color: #888; font-size: 11px; }
+    .delete-icon { color: #ff6b6b; font-size: 18px; cursor: pointer; padding-left: 15px; }
   </style>
 </head>
 <body>
@@ -45,115 +43,100 @@
           <option value="墊付">⚖️ 分帳 / 墊付</option>
         </select>
       </div>
-      
       <div class="input-group">
         <label>項目內容</label>
-        <input type="text" name="item" list="item-list" placeholder="如：好市多、午餐、藥妝" autocomplete="off" required>
+        <input type="text" name="item" list="item-list" placeholder="如：好市多、午餐" autocomplete="off" required>
         <datalist id="item-list"></datalist>
       </div>
-
-      <div class="input-group"><label>金額 (支援幣別)</label><input type="text" name="amount" placeholder="如：200、5000USD、90000KRW" required></div>
-      
-      <div class="input-group" id="split-group" style="display: none; gap: 15px;">
-        <div style="flex: 1;"><label>人數</label><input type="number" name="people" value="1"></div>
-        <div style="flex: 1;"><label>墊付人</label><input type="text" name="payer" value="Luke"></div>
+      <div class="input-group">
+        <label>金額 (支援外幣)</label>
+        <input type="text" name="amount" placeholder="如：200、5000USD、90000KRW" required>
       </div>
-      
-      <div class="input-group"><label>付款方式 / 帳戶</label><input type="text" name="payment" placeholder="未填預設為現金"></div>
+      <div id="split-group" style="display: none; gap: 15px;" class="input-group">
+        <div style="flex: 1;"><label>人數</label><input type="number" name="people" value="1"></div>
+        <div style="flex: 1;">
+          <label>墊付人</label>
+          <input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off">
+          <datalist id="payer-list"></datalist>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>付款方式 / 帳戶</label>
+        <input type="text" name="payment" placeholder="未填預設現金 (朋友代墊則留白)">
+      </div>
       <div class="input-group">
         <label>照片附件</label>
-        <div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據或明細</span></div>
-        <input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview">
+        <div class="photo-btn" onclick="document.getElementById('photoInput').click()">
+          <i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)">
+        <img id="preview">
       </div>
-      <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
-      
+      <div class="input-group">
+        <label>備註</label>
+        <input type="text" name="note" placeholder="補充細節...">
+      </div>
       <button type="button" id="submit-btn" onclick="uploadData()">確認送出資料</button>
       <div id="status"></div>
     </form>
-    
     <div id="history-section">
-      <div style="color: #888; font-size: 13px; margin-bottom: 12px;">☁️ 雲端最近 20 筆紀錄</div>
+      <div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 雲端最近 20 筆紀錄</div>
       <div id="history-list"></div>
     </div>
   </div>
 
   <script>
-    // 🔥 重要：換成你的 GAS 部署網址 (結尾要是 /exec)
+    // 🔥 重要：請將下方替換為你的 GAS 網址
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
 
     function callAPI(action, data) {
-      const payload = { source: 'webapp', action: action, data: data || {} };
-      return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' });
+      return fetch(API_URL, { method: 'POST', body: JSON.stringify({ source: 'webapp', action: action, data: data || {} }) });
     }
 
     let currentPhotoBase64 = "";
-    
     window.onload = function() { refreshCloudHistory(); loadAutocomplete(); };
 
     function refreshCloudHistory() {
-      callAPI('getHistory', {})
-        .then(res => res.json())
-        .then(history => {
-          const list = document.getElementById('history-list');
-          if(!history || history.length === 0) { list.innerHTML = '暫無資料'; return; }
-          // 🌟 網頁直覺進化：在每筆紀錄旁邊加上一個垃圾桶按鈕
-          list.innerHTML = history.map(h => `
-            <div class="history-item">
-              <div class="history-item-content">
-                <span>${h.text}</span>
-                <span class="time">${h.time}</span>
-              </div>
-              <i class="fa-solid fa-trash-can delete-icon" onclick="deleteSpecificRecord(${h.rowNum}, '${h.text.split('：')[0]}')"></i>
-            </div>
-          `).join('');
-        }).catch(err => {
-          document.getElementById('history-list').innerHTML = '<span style="color:#ff6b6b;">無法載入歷史紀錄。</span>';
-        });
+      callAPI('getHistory').then(res => res.json()).then(history => {
+        const list = document.getElementById('history-list');
+        list.innerHTML = history.length ? history.map(h => `<div class="history-item"><div class="history-item-content"><span>${h.text}</span><span class="time">${h.time}</span></div><i class="fa-solid fa-trash-can delete-icon" onclick="deleteSpecificRecord(${h.rowNum}, '${h.text.split('：')[0]}')"></i></div>`).join('') : '暫無資料';
+      });
     }
 
     function loadAutocomplete() {
-      callAPI('getItems', {}).then(res => res.json()).then(items => {
-        if(items && items.length > 0) document.getElementById('item-list').innerHTML = items.map(i => `<option value="${i}">`).join('');
-      }).catch(err => console.log("無法載入記憶清單"));
+      callAPI('getItems').then(res => res.json()).then(data => {
+        if(data.items && data.items.length) {
+          document.getElementById('item-list').innerHTML = data.items.map(i => `<option value="${i}">`).join('');
+        }
+        if(data.payers && data.payers.length) {
+          document.getElementById('payer-list').innerHTML = data.payers.map(p => `<option value="${p}">`).join('');
+        }
+      });
     }
 
-    // 🌟 處理網頁端點擊垃圾桶的刪除動作
     function deleteSpecificRecord(rowNum, itemName) {
-      if(!confirm("確定要刪除「" + itemName + "」這筆紀錄嗎？")) return;
+      if(!confirm(`確定刪除「${itemName}」這筆紀錄嗎？`)) return;
       document.getElementById('status').innerText = "🗑️ 刪除中...";
-      
-      callAPI('deleteRow', { row: rowNum })
-        .then(res => res.text())
-        .then(resultMsg => {
-          document.getElementById('status').innerText = resultMsg; 
-          refreshCloudHistory(); // 刪除完自動更新畫面
-        }).catch(err => { document.getElementById('status').innerText = "❌ 刪除失敗"; });
+      callAPI('deleteRow', { row: rowNum }).then(res => res.text()).then(msg => {
+        document.getElementById('status').innerText = msg; refreshCloudHistory();
+      });
     }
 
-    document.getElementById('type-selector').addEventListener('change', function(e) {
+    document.getElementById('type-selector').addEventListener('change', e => {
       document.getElementById('split-group').style.display = (e.target.value === '墊付') ? 'flex' : 'none';
     });
 
     function previewAndCompressImage(input) {
       if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          var img = new Image();
-          img.onload = function() {
-            var canvas = document.createElement('canvas');
-            var MAX = 1920, w = img.width, h = img.height;
+        var reader = new FileReader(); reader.onload = e => {
+          var img = new Image(); img.onload = () => {
+            var canvas = document.createElement('canvas'); var MAX = 1600, w = img.width, h = img.height;
             if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
-            canvas.width = w; canvas.height = h;
-            var ctx = canvas.getContext('2d'); ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, w, h);
-            currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.9);
-            document.getElementById('preview').src = currentPhotoBase64;
-            document.getElementById('preview').style.display = 'block';
-            document.getElementById('photo-label').innerText = "已就緒";
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
+            canvas.width = w; canvas.height = h; var ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+            currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('preview').src = currentPhotoBase64; document.getElementById('preview').style.display = 'block'; document.getElementById('photo-label').innerText = "已就緒";
+          }; img.src = e.target.result;
+        }; reader.readAsDataURL(input.files[0]);
       }
     }
 
@@ -161,41 +144,26 @@
       const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
       if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; return; }
       btn.disabled = true; status.innerText = "🚀 同步雲端中...";
-      
-      const data = { type: form.type.value, item: form.item.value, amount: form.amount.value, payment: form.payment.value, note: form.note.value, photoBase64: currentPhotoBase64, people: form.people.value, payer: form.payer.value };
-      
-      callAPI('submit', data)
-        .then(res => res.text())
-        .then(resultMsg => {
-          status.innerText = resultMsg; form.reset(); currentPhotoBase64 = "";
-          document.getElementById('preview').style.display = 'none';
-          document.getElementById('split-group').style.display = 'none';
-          btn.disabled = false; refreshCloudHistory(); loadAutocomplete();
-        }).catch(err => { status.innerText = "❌ 連線失敗"; btn.disabled = false; });
+      callAPI('submit', { type: form.type.value, item: form.item.value, amount: form.amount.value, payment: form.payment.value, note: form.note.value, photoBase64: currentPhotoBase64, people: form.people.value, payer: form.payer.value })
+      .then(res => res.text()).then(msg => {
+        status.innerText = msg; 
+        form.reset(); 
+        form.payer.value = "Luke"; // 送出後重置確保墊付人為Luke
+        currentPhotoBase64 = ""; 
+        document.getElementById('preview').style.display = 'none'; 
+        document.getElementById('split-group').style.display = 'none'; 
+        btn.disabled = false; 
+        refreshCloudHistory(); 
+        loadAutocomplete();
+      });
     }
-  // 🌟 破解付費限制：自製原生下拉更新 (Pull to Refresh)
-    let touchStartY = 0;
-    
-    document.addEventListener('touchstart', function(e) {
-      // 只有在網頁最頂端時，才開始記錄手指位置
-      if (window.scrollY === 0) {
-        touchStartY = e.touches[0].clientY;
-      }
-    }, {passive: true});
 
-    document.addEventListener('touchend', function(e) {
-      if (window.scrollY === 0 && touchStartY > 0) {
-        let touchEndY = e.changedTouches[0].clientY;
-        // 如果手指向下大幅滑動超過 150px
-        if (touchEndY - touchStartY > 100) { 
-          document.getElementById('status').innerText = "🔄 畫面更新中...";
-          // 延遲 0.3 秒後重新載入網頁，讓視覺更順暢
-          setTimeout(() => {
-            location.reload(); 
-          }, 300);
-        }
-      }
-      touchStartY = 0; // 重置
+    let touchStartY = 0;
+    document.addEventListener('touchstart', e => { if (window.scrollY === 0) touchStartY = e.touches[0].clientY; }, {passive: true});
+    document.addEventListener('touchend', e => {
+      if (window.scrollY === 0 && touchStartY > 0 && e.changedTouches[0].clientY - touchStartY > 150) {
+        document.getElementById('status').innerText = "🔄 更新中..."; setTimeout(() => location.reload(), 300);
+      } touchStartY = 0;
     });
   </script>
 </body>
