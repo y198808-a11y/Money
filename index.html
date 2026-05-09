@@ -171,6 +171,30 @@
           btn.disabled = false; refreshCloudHistory(); loadAutocomplete();
         }).catch(err => { status.innerText = "❌ 連線失敗"; btn.disabled = false; });
     }
+  // 🌟 破解付費限制：自製原生下拉更新 (Pull to Refresh)
+    let touchStartY = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+      // 只有在網頁最頂端時，才開始記錄手指位置
+      if (window.scrollY === 0) {
+        touchStartY = e.touches[0].clientY;
+      }
+    }, {passive: true});
+
+    document.addEventListener('touchend', function(e) {
+      if (window.scrollY === 0 && touchStartY > 0) {
+        let touchEndY = e.changedTouches[0].clientY;
+        // 如果手指向下大幅滑動超過 150px
+        if (touchEndY - touchStartY > 150) { 
+          document.getElementById('status').innerText = "🔄 畫面更新中...";
+          // 延遲 0.3 秒後重新載入網頁，讓視覺更順暢
+          setTimeout(() => {
+            location.reload(); 
+          }, 300);
+        }
+      }
+      touchStartY = 0; // 重置
+    });
   </script>
 </body>
 </html>
