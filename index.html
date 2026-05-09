@@ -7,10 +7,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
-  <title>雪球計畫記帳本</title>
+  <title>韋杰記帳</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    /* 🌟 修復 1：按鈕色溫微調，改為純淨、安定心神的翠綠色 (#1a9c39)，強化木能量，去除螢光土味 */
+    /* 🌟 翠綠色主調 (#1a9c39)，強化木能量 */
     :root { --primary: #1a9c39; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.5); }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
     .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; }
@@ -26,13 +26,14 @@
     
     .photo-btn { background: #333; border: 2px dashed #555; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
     
-    /* 🌟 配合翠綠色調整垃圾桶顏色，使其視覺更安穩 */
-    .delete-icon { color: #cc3333; font-size: 18px; cursor: pointer; padding-left: 15px; }
+    /* 🌟 修復 2：水木相生佈局，將垃圾桶改為深海藍 (#1A365D)，象徵淨化與平穩情緒 */
+    .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; padding-left: 15px; transition: color 0.2s; }
+    .delete-icon:active { color: #2C5282; } /* 點擊時切換為經典藍增加互動感 */
 
-    /* 🌟 修復 2：增加「水」的動態暗示 - 漣漪動畫效果 */
+    /* 漣漪按鈕設定 */
     #submit-btn { 
       background: var(--primary); 
-      color: #fff; /* 翠綠按鈕配白字更安穩 */
+      color: #fff; 
       width: 100%; 
       padding: 18px; 
       border-radius: 50px; 
@@ -41,26 +42,22 @@
       font-weight: bold; 
       margin-top: 5px; 
       cursor: pointer; 
-      position: relative; /* 用於定位漣漪 */
-      overflow: hidden; /* 確保漣漪不會跑出按鈕 */
+      position: relative; 
+      overflow: hidden; 
       transition: background 0.3s;
     }
     
-    /* 漣漪本體 (水滴落下意念) */
     .ripple {
       position: absolute;
-      background: var(--wave); /* 淡藍色水波 */
+      background: var(--wave); 
       border-radius: 50%;
       transform: scale(0);
       animation: ripple-animation 0.6s linear;
-      pointer-events: none; /* 防止漣漪阻擋點擊 */
+      pointer-events: none; 
     }
 
     @keyframes ripple-animation {
-      to {
-        transform: scale(4);
-        opacity: 0;
-      }
+      to { transform: scale(4); opacity: 0; }
     }
 
     #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
@@ -107,7 +104,7 @@
         </div>
         <div style="flex: 1;">
           <label>墊付人</label>
-          <input type="text" name="payer" value="自己" list="payer-list" autocomplete="off" onfocus="if(this.value==='自己') this.value='';" onblur="if(this.value.trim()==='') this.value='自己';">
+          <input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
           <datalist id="payer-list"></datalist>
         </div>
       </div>
@@ -144,7 +141,6 @@
       return fetch(API_URL, { method: 'POST', body: JSON.stringify({ source: 'webapp', action: action, data: data || {} }) });
     }
 
-    // 🌟 韋杰專屬：水滴漣漪起動函數 (水能量)
     function createRipple(event) {
       const btn = event.currentTarget;
       const ripple = document.createElement("span");
@@ -152,15 +148,12 @@
       const radius = diameter / 2;
 
       ripple.style.width = ripple.style.height = `${diameter}px`;
-      // 計算相對於按鈕內的點擊位置，讓漣漪從手指點擊處散開
       ripple.style.left = `${event.clientX - btn.offsetLeft - radius}px`;
       ripple.style.top = `${event.clientY - btn.offsetTop - radius}px`;
       ripple.className = "ripple";
 
-      // 如果按鈕內已有漣漪，先移除，確保單次點擊只有一滴水
       const oldRipple = btn.getElementsByClassName("ripple")[0];
       if (oldRipple) { oldRipple.remove(); }
-
       btn.appendChild(ripple);
     }
 
@@ -187,7 +180,7 @@
 
     function deleteSpecificRecord(rowNum, itemName) {
       if(!confirm(`確定刪除「${itemName}」？`)) return;
-      document.getElementById('status').innerText = "🗑️ 刪除中...";
+      document.getElementById('status').innerText = "🗑️ 淨化刪除中...";
       callAPI('deleteRow', { row: rowNum }).then(res => res.text()).then(msg => {
         document.getElementById('status').innerText = msg; refreshCloudHistory();
       });
@@ -234,9 +227,9 @@
         status.innerText = msg; 
         form.reset(); 
         
-        // 重置預設值
+        // 🌟 修復 1：送出後重置預設值為 Luke
         form.people.value = "1";
-        form.payer.value = "自己"; 
+        form.payer.value = "Luke"; 
         document.getElementById('payment-input').placeholder = '未填預設為現金';
         document.getElementById('currency-toggle').checked = false;
         document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
