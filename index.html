@@ -5,73 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
-  <title>韋杰記帳</title>
+  <title>韋杰本本</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    /* 🌟 翠綠色主調 (#1a9c39)，強化木能量 */
-    :root { --primary: #1a9c39; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.5); }
+    :root { --primary: #1a9c39; --water: #00BFFF; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.4); }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
-    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; }
-    h1 { font-size: 28px; margin: 0 0 15px; color: var(--primary); text-align: center; }
-    .input-group { margin-bottom: 18px; }
-    label { display: block; margin-bottom: 8px; font-size: 13px; color: #888; }
-    
+    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 25px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; }
+    h1 { font-size: 28px; margin: 0 0 15px; text-align: center; }
+    .title-water { color: var(--water); margin: 0 5px; }
+    .title-text { color: var(--primary); font-weight: bold; }
+    .input-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; color: #888; }
     input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
-    input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--primary); outline: none; }
-    input::-webkit-calendar-picker-indicator { display: none !important; }
-    
-    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); margin: 0; cursor: pointer; }
-    
-    .photo-btn { background: #333; border: 2px dashed #555; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
-    
-    /* 深海藍垃圾桶 (#1A365D)，象徵淨化與平穩情緒 */
-    .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; padding-left: 15px; transition: color 0.2s; }
-    .delete-icon:active { color: #2C5282; }
-
-    /* 漣漪按鈕設定 */
-    #submit-btn { 
-      background: var(--primary); 
-      color: #fff; 
-      width: 100%; 
-      padding: 18px; 
-      border-radius: 50px; 
-      border: none; 
-      font-size: 18px; 
-      font-weight: bold; 
-      margin-top: 5px; 
-      cursor: pointer; 
-      position: relative; 
-      overflow: hidden; 
-      transition: background 0.3s;
-    }
-    
-    .ripple {
-      position: absolute;
-      background: var(--wave); 
-      border-radius: 50%;
-      transform: scale(0);
-      animation: ripple-animation 0.6s linear;
-      pointer-events: none; 
-    }
-
-    @keyframes ripple-animation {
-      to { transform: scale(4); opacity: 0; }
-    }
-
+    input:focus, select:focus { border-color: var(--primary); outline: none; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+    /* 🌟 外幣專屬提示文字樣式 */
+    #currency-hint { font-size: 11px; color: var(--water); margin-top: 5px; display: none; }
+    .photo-btn { background: #333; border: 2px dashed #555; height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; }
+    /* 🌟 深海藍淨化垃圾桶 */
+    .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; padding-left: 15px; }
+    #submit-btn { background: var(--primary); color: #fff; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; position: relative; overflow: hidden; }
+    .ripple { position: absolute; background: var(--wave); border-radius: 50%; transform: scale(0); animation: ripple-animation 0.6s linear; pointer-events: none; }
+    @keyframes ripple-animation { to { transform: scale(4); opacity: 0; } }
     #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
     #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; }
-    #history-section { margin-top: 25px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
+    #history-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
     #history-list { max-height: 250px; overflow-y: auto; }
     .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
-    .history-item-content { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-    .history-item .time { color: #888; font-size: 11px; }
+    .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
   </style>
 </head>
 <body>
   <div class="app-card">
-    <h1><i class="fa-solid fa-calculator"></i> 韋杰記帳</h1>
+    <h1><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></h1>
     <form id="payForm">
       <div class="input-group">
         <label>交易類別</label>
@@ -81,128 +48,56 @@
           <option value="墊付">⚖️ 分帳 / 墊付</option>
         </select>
       </div>
+      <div class="input-group"><label>項目內容</label><input type="text" name="item" list="item-list" placeholder="如：好市多、午餐、藥妝" autocomplete="off" required><datalist id="item-list"></datalist></div>
       <div class="input-group">
-        <label>項目內容</label>
-        <input type="text" name="item" list="item-list" placeholder="如：好市多、午餐、藥妝" autocomplete="off" required>
-        <datalist id="item-list"></datalist>
-      </div>
-      
-      <div class="input-group">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="margin-bottom: 0;">金額</label>
-          <label style="margin-bottom: 0; color: var(--primary); display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px;">
-            <input type="checkbox" id="currency-toggle"> 外幣模式
-          </label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="margin:0;">金額</label>
+          <label style="margin:0; color:var(--primary); font-size:12px; cursor:pointer;"><input type="checkbox" id="currency-toggle"> 外幣模式</label>
         </div>
         <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999 或 1689" required autocomplete="off">
+        <div id="currency-hint">💡 請輸入：金額 + 幣別 (如: 999USD 或 90000KRW)</div>
       </div>
-
       <div id="split-group" style="display: none; gap: 15px;" class="input-group">
-        <div style="flex: 1;">
-          <label>人數</label>
-          <input type="number" name="people" value="1" onfocus="if(this.value==='1') this.value='';" onblur="if(this.value.trim()==='') this.value='1';">
-        </div>
-        <div style="flex: 1;">
-          <label>墊付人</label>
-          <input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
-          <datalist id="payer-list"></datalist>
-        </div>
+        <div style="flex: 1;"><label>人數</label><input type="number" name="people" value="1" onfocus="if(this.value==='1') this.value='';" onblur="if(this.value.trim()==='') this.value='1';"></div>
+        <div style="flex: 1;"><label>墊付人</label><input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"><datalist id="payer-list"></datalist></div>
       </div>
-      <div class="input-group">
-        <label>付款方式 / 帳戶</label>
-        <input type="text" id="payment-input" name="payment" placeholder="未填預設為現金">
-      </div>
-      <div class="input-group">
-        <label>照片附件</label>
-        <div class="photo-btn" onclick="document.getElementById('photoInput').click()">
-          <i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span>
-        </div>
-        <input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)">
-        <img id="preview">
-      </div>
-      <div class="input-group">
-        <label>備註</label>
-        <input type="text" name="note" placeholder="補充細節...">
-      </div>
+      <div class="input-group"><label>付款方式</label><input type="text" id="payment-input" name="payment" placeholder="未填預設為現金"></div>
+      <div class="input-group"><label>照片附件</label><div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
+      <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
       <div id="status"></div>
     </form>
-    <div id="history-section">
-      <div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 最近 20 筆紀錄</div>
-      <div id="history-list"></div>
-    </div>
+    <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 最近 20 筆紀錄</div><div id="history-list"></div></div>
   </div>
 
   <script>
-    // 🔥 重要：請將下方替換為你的 GAS 網址
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
-
-    function callAPI(action, data) {
-      return fetch(API_URL, { method: 'POST', body: JSON.stringify({ source: 'webapp', action: action, data: data || {} }) });
+    function callAPI(a, d) { return fetch(API_URL, { method: 'POST', body: JSON.stringify({ source: 'webapp', action: a, data: d || {} }) }); }
+    function createRipple(e) {
+      const b = e.currentTarget, r = document.createElement("span"), d = Math.max(b.clientWidth, b.clientHeight), rad = d/2;
+      r.style.width = r.style.height = `${d}px`; r.style.left = `${e.clientX - b.offsetLeft - rad}px`; r.style.top = `${e.clientY - b.offsetTop - rad}px`;
+      r.className = "ripple"; const old = b.getElementsByClassName("ripple")[0]; if(old) old.remove(); b.appendChild(r);
     }
-
-    function createRipple(event) {
-      const btn = event.currentTarget;
-      const ripple = document.createElement("span");
-      const diameter = Math.max(btn.clientWidth, btn.clientHeight);
-      const radius = diameter / 2;
-
-      ripple.style.width = ripple.style.height = `${diameter}px`;
-      ripple.style.left = `${event.clientX - btn.offsetLeft - radius}px`;
-      ripple.style.top = `${event.clientY - btn.offsetTop - radius}px`;
-      ripple.className = "ripple";
-
-      const oldRipple = btn.getElementsByClassName("ripple")[0];
-      if (oldRipple) { oldRipple.remove(); }
-      btn.appendChild(ripple);
-    }
-
-    let currentPhotoBase64 = "";
     window.onload = function() { refreshCloudHistory(); loadAutocomplete(); };
-
-    function refreshCloudHistory() {
-      callAPI('getHistory').then(res => res.json()).then(history => {
-        const list = document.getElementById('history-list');
-        list.innerHTML = history.length ? history.map(h => `<div class="history-item"><div class="history-item-content"><span>${h.text}</span><span class="time">${h.time}</span></div><i class="fa-solid fa-trash-can delete-icon" onclick="deleteSpecificRecord(${h.rowNum}, '${h.text.split('：')[0]}')"></i></div>`).join('') : '暫無資料';
-      });
-    }
-
-    function loadAutocomplete() {
-      callAPI('getItems').then(res => res.json()).then(data => {
-        if(data.items && data.items.length) {
-          document.getElementById('item-list').innerHTML = data.items.map(i => `<option value="${i}">`).join('');
-        }
-        if(data.payers && data.payers.length) {
-          document.getElementById('payer-list').innerHTML = data.payers.map(p => `<option value="${p}">`).join('');
-        }
-      });
-    }
-
-    function deleteSpecificRecord(rowNum, itemName) {
-      if(!confirm(`確定刪除「${itemName}」？`)) return;
-      document.getElementById('status').innerText = "🗑️ 淨化刪除中...";
-      callAPI('deleteRow', { row: rowNum }).then(res => res.text()).then(msg => {
-        document.getElementById('status').innerText = msg; refreshCloudHistory();
-      });
-    }
-
+    function refreshCloudHistory() { callAPI('getHistory').then(res => res.json()).then(h => {
+      document.getElementById('history-list').innerHTML = h.length ? h.map(x => `<div class="history-item"><div><span>${x.text}</span><div class="time">${x.time}</div></div><i class="fa-solid fa-trash-can delete-icon" onclick="deleteRecord(${x.rowNum}, '${x.text.split('：')[0]}')"></i></div>`).join('') : '暫無資料';
+    }); }
+    function loadAutocomplete() { callAPI('getItems').then(res => res.json()).then(d => {
+      if(d.items) document.getElementById('item-list').innerHTML = d.items.map(i => `<option value="${i}">`).join('');
+      if(d.payers) document.getElementById('payer-list').innerHTML = d.payers.map(p => `<option value="${p}">`).join('');
+    }); }
+    function deleteRecord(r, n) { if(!confirm(`確定刪除「${n}」？`)) return; document.getElementById('status').innerText = "🗑️ 淨化刪除中..."; callAPI('deleteRow', {row: r}).then(res => res.text()).then(m => { document.getElementById('status').innerText = m; refreshCloudHistory(); }); }
     document.getElementById('type-selector').addEventListener('change', e => {
-      const isSplit = e.target.value === '墊付';
-      document.getElementById('split-group').style.display = isSplit ? 'flex' : 'none';
-      document.getElementById('payment-input').placeholder = isSplit ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
+      const isS = e.target.value === '墊付'; document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
+      document.getElementById('payment-input').placeholder = isS ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
     });
-
+    // 🌟 外幣模式切換提示
     document.getElementById('currency-toggle').addEventListener('change', e => {
-      const amtInput = document.getElementById('amount-input');
-      if (e.target.checked) {
-        amtInput.removeAttribute('inputmode');
-        amtInput.placeholder = '如：999USD 或 90000KRW';
-      } else {
-        amtInput.setAttribute('inputmode', 'decimal');
-        amtInput.placeholder = '如：999 或 1689';
-      }
+      const amt = document.getElementById('amount-input'), hint = document.getElementById('currency-hint');
+      if (e.target.checked) { amt.removeAttribute('inputmode'); amt.placeholder = '如: 999USD 或 90000KRW'; hint.style.display = 'block'; }
+      else { amt.setAttribute('inputmode', 'decimal'); amt.placeholder = '如：999 或 1689'; hint.style.display = 'none'; }
     });
-
+    let currentPhoto = "";
     function previewAndCompressImage(input) {
       if (input.files && input.files[0]) {
         var reader = new FileReader(); reader.onload = e => {
@@ -210,37 +105,28 @@
             var canvas = document.createElement('canvas'); var MAX = 1600, w = img.width, h = img.height;
             if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
             canvas.width = w; canvas.height = h; var ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-            currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
-            document.getElementById('preview').src = currentPhotoBase64; document.getElementById('preview').style.display = 'block'; document.getElementById('photo-label').innerText = "已就緒";
+            currentPhoto = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('preview').src = currentPhoto; document.getElementById('preview').style.display = 'block'; document.getElementById('photo-label').innerText = "已就緒";
           }; img.src = e.target.result;
         }; reader.readAsDataURL(input.files[0]);
       }
     }
-
     function uploadData() {
       const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
-      if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; btn.disabled = false; return; }
+      if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; return; }
       btn.disabled = true; status.innerText = "🚀 資料匯聚成河中...";
-      
-      callAPI('submit', { type: form.type.value, item: form.item.value, amount: form.amount.value, payment: form.payment.value, note: form.note.value, photoBase64: currentPhotoBase64, people: form.people.value, payer: form.payer.value })
+      callAPI('submit', { type: form.type.value, item: form.item.value, amount: form.amount.value, payment: form.payment.value, note: form.note.value, photoBase64: currentPhoto, people: form.people.value, payer: form.payer.value })
       .then(res => res.text()).then(msg => {
-        status.innerText = msg; 
-        form.reset(); 
-        
-        form.people.value = "1";
-        form.payer.value = "Luke"; 
-        document.getElementById('payment-input').placeholder = '未填預設為現金';
-        document.getElementById('currency-toggle').checked = false;
+        status.innerText = msg; form.reset(); form.people.value = "1"; form.payer.value = "Luke";
+        document.getElementById('currency-toggle').checked = false; document.getElementById('currency-hint').style.display = 'none';
         document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
-        document.getElementById('amount-input').placeholder = '如：999 或 1689';
-
-        currentPhotoBase64 = ""; 
-        document.getElementById('preview').style.display = 'none'; 
-        document.getElementById('split-group').style.display = 'none'; 
-        btn.disabled = false; 
-        refreshCloudHistory(); 
-        loadAutocomplete();
+        document.getElementById('preview').style.display = 'none'; document.getElementById('split-group').style.display = 'none';
+        btn.disabled = false; currentPhoto = ""; refreshCloudHistory(); loadAutocomplete();
       });
     }
-
-    let touch
+    let startY = 0;
+    document.addEventListener('touchstart', e => { if(window.scrollY === 0) startY = e.touches[0].clientY; }, {passive: true});
+    document.addEventListener('touchend', e => { if(window.scrollY === 0 && startY > 0 && e.changedTouches[0].clientY - startY > 150) { document.getElementById('status').innerText = "🔄 更新中..."; setTimeout(() => location.reload(), 300); } startY = 0; });
+  </script>
+</body>
+</html>
