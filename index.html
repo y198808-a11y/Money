@@ -6,8 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="manifest.json">
-  <title>韋杰本本</title>
+  <title>記帳本本</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root { --primary: #1a9c39; --water: #00BFFF; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.4); }
@@ -34,7 +33,6 @@
     .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
     .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
     
-    /* 🌟 新增：自訂淨化視窗 (Modal) 樣式 */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
     .modal-overlay.active { display: flex; opacity: 1; }
     .modal-content { background: var(--card); border: 1px solid #444; border-radius: 20px; padding: 25px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: scale(0.9); transition: transform 0.2s; }
@@ -44,12 +42,12 @@
     .modal-actions { display: flex; gap: 15px; }
     .modal-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
     .btn-cancel { background: #333; color: #fff; }
-    .btn-confirm { background: #1A365D; color: #fff; } /* 深海藍淨化色 */
+    .btn-confirm { background: #1A365D; color: #fff; }
   </style>
 </head>
 <body>
   <div class="app-card">
-    <h1><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></h1>
+    <h1><span class="title-water">💧</span><span class="title-text">記帳本本</span><span class="title-water">💧</span></h1>
     <form id="payForm">
       <div class="input-group">
         <label>交易類別</label>
@@ -69,9 +67,13 @@
       </div>
       <div id="split-group" style="display: none; gap: 15px;" class="input-group">
         <div style="flex: 1;"><label>人數</label><input type="number" name="people" value="1" onfocus="if(this.value==='1') this.value='';" onblur="if(this.value.trim()==='') this.value='1';"></div>
-        <div style="flex: 1;"><label>墊付人</label><input type="text" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"><datalist id="payer-list"></datalist></div>
+        <div style="flex: 1;"><label>墊付人</label><input type="text" name="payer" value="自己" list="payer-list" autocomplete="off" onfocus="if(this.value==='自己') this.value='';" onblur="if(this.value.trim()==='') this.value='自己';"><datalist id="payer-list"></datalist></div>
       </div>
-      <div class="input-group"><label>付款方式</label><input type="text" id="payment-input" name="payment" placeholder="未填預設為現金"></div>
+      <div class="input-group">
+        <label>付款方式</label>
+        <input type="text" id="payment-input" name="payment" list="payment-list" placeholder="未填預設為現金" autocomplete="off">
+        <datalist id="payment-list"></datalist>
+      </div>
       <div class="input-group"><label>照片附件</label><div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
       <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
@@ -82,17 +84,17 @@
 
   <div id="custom-modal" class="modal-overlay">
     <div class="modal-content">
-      <div class="modal-title"><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></div>
+      <div class="modal-title"><span class="title-water">💧</span><span class="title-text">系統提示</span><span class="title-water">💧</span></div>
       <div class="modal-text" id="modal-desc">確定要刪除這筆紀錄嗎？</div>
       <div class="modal-actions">
-        <button class="modal-btn btn-cancel" onclick="closeModal()">取消保留</button>
-        <button class="modal-btn btn-confirm" id="confirm-delete-btn">確定淨化</button>
+        <button class="modal-btn btn-cancel" onclick="closeModal()">取消</button>
+        <button class="modal-btn btn-confirm" id="confirm-delete-btn">確定刪除</button>
       </div>
     </div>
   </div>
 
   <script>
-    // 🔥 重要：請將下方替換為你的 GAS 網址
+    // 🔥 重要：請將下方替換為更新後的 GAS 部署網址
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
 
     function callAPI(a, d) { 
@@ -118,14 +120,15 @@
       }).catch(e => console.error("History error:", e)); 
     }
 
+    // 🌟 新增解析 payments 資料並寫入前端下拉選單
     function loadAutocomplete() { 
       callAPI('getItems').then(res => res.json()).then(d => {
         if(d.items) document.getElementById('item-list').innerHTML = d.items.map(i => `<option value="${i}">`).join('');
         if(d.payers) document.getElementById('payer-list').innerHTML = d.payers.map(p => `<option value="${p}">`).join('');
+        if(d.payments) document.getElementById('payment-list').innerHTML = d.payments.map(py => `<option value="${py}">`).join('');
       }).catch(e => console.error("Autocomplete error:", e)); 
     }
 
-    // 🌟 取代原本的原生 confirm，改呼叫自訂 Modal
     let targetRowToDelete = null;
     function openDeleteModal(rowNum, itemName) {
       targetRowToDelete = rowNum;
@@ -138,13 +141,11 @@
       targetRowToDelete = null;
     }
 
-    // 🌟 綁定 Modal 內的「確定淨化」按鈕事件
     document.getElementById('confirm-delete-btn').addEventListener('click', () => {
       if (!targetRowToDelete) return;
       const rowToDel = targetRowToDelete;
-      closeModal(); // 先關閉視窗
-      
-      document.getElementById('status').innerText = "🗑️ 淨化刪除中..."; 
+      closeModal(); 
+      document.getElementById('status').innerText = "🗑️ 刪除中..."; 
       callAPI('deleteRow', {row: rowToDel}).then(res => res.text()).then(m => { 
         document.getElementById('status').innerText = m; 
         refreshCloudHistory(); 
@@ -189,7 +190,7 @@
       if(!form.item.value || !form.amount.value) { status.innerText = "⚠️ 請填寫項目與金額"; return; }
       
       btn.disabled = true; 
-      status.innerText = "🚀 資料匯聚成河中...";
+      status.innerText = "🚀 資料同步中...";
       
       callAPI('submit', { 
         type: form.type.value, item: form.item.value, amount: form.amount.value, 
@@ -201,7 +202,7 @@
         status.innerText = msg;
         form.reset(); 
         form.people.value = "1";
-        form.payer.value = "Luke";
+        form.payer.value = "自己";
         document.getElementById('currency-toggle').checked = false;
         document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
         document.getElementById('amount-input').placeholder = '如：999 或 1689';
