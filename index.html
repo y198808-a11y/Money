@@ -74,7 +74,7 @@
         <input type="text" id="payment-input" name="payment" list="payment-list" placeholder="未填預設為現金" autocomplete="off">
         <datalist id="payment-list"></datalist>
       </div>
-      <div class="input-group"><label>照片附件</label><div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
+      <div class="input-group"><label>照片附件</label><div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
       <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
       <div id="status"></div>
