@@ -74,7 +74,27 @@
         <input type="text" id="payment-input" name="payment" list="payment-list" placeholder="未填預設為現金" autocomplete="off">
         <datalist id="payment-list"></datalist>
       </div>
-      <div class="input-group"><label>照片附件</label><div class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
+            <div class="input-group">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;">
+          <label style="margin: 0;">照片附件</label>
+          <span id="photo-label" style="font-size: 12px; color: var(--primary);">未選擇</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="photo-btn" style="flex: 1; height: 75px;" onclick="document.getElementById('photoInputCamera').click()">
+            <i class="fa-solid fa-camera" style="font-size: 18px; margin-bottom: 5px;"></i>
+            <span style="font-size: 13px;">直接拍照</span>
+          </div>
+          <div class="photo-btn" style="flex: 1; height: 75px;" onclick="document.getElementById('photoInputGallery').click()">
+            <i class="fa-regular fa-image" style="font-size: 18px; margin-bottom: 5px;"></i>
+            <span style="font-size: 13px;">相簿選取</span>
+          </div>
+        </div>
+        
+        <input type="file" id="photoInputCamera" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)">
+        <input type="file" id="photoInputGallery" accept="image/*" style="display:none" onchange="previewAndCompressImage(this)">
+        <img id="preview">
+      </div>
+ class="photo-btn" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i><span id="photo-label">拍攝收據</span></div><input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewAndCompressImage(this)"><img id="preview"></div>
       <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
       <div id="status"></div>
