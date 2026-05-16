@@ -200,6 +200,14 @@
       }); 
     });
 
+    // 🌟 取得當下平均分攤金額
+    function getAutoAvg() {
+      const count = parseInt(document.getElementById('split-count').value) || 1;
+      const amountInput = document.getElementById('amount-input').value;
+      const rawAmount = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
+      return rawAmount ? Math.round(rawAmount / (count + 1)) : "";
+    }
+
     function adjustSplitCount(delta) {
       let input = document.getElementById('split-count');
       let newVal = parseInt(input.value) + delta;
@@ -209,17 +217,34 @@
     function renderSplitFields() {
       const count = parseInt(document.getElementById('split-count').value) || 1;
       const container = document.getElementById('split-fields-container');
+      const avg = getAutoAvg();
+
+      let existingData = [];
+      for(let i=1; i<=10; i++) {
+        let n = document.getElementById(`split-name-${i}`);
+        let a = document.getElementById(`split-amount-${i}`);
+        if (n) existingData[i] = { name: n.value, amount: a.value, manual: a.dataset.manual === "true" };
+      }
+
       let html = '';
       for(let i=1; i<=count; i++) {
+        let nameVal = existingData[i] ? existingData[i].name : "";
+        let isManual = existingData[i] ? existingData[i].manual : false;
+        let amountVal = isManual ? existingData[i].amount : avg; // 如果還沒手動改過，就強制套用新平均
+
+        // 🌟 點擊即清空、離開沒打字就恢復的完美 UX 設計
         html += `
         <div style="display: flex; gap: 15px; margin-top: 10px;">
           <div style="flex: 1;">
             <label style="font-size: 11px;">代墊對象 ${i}</label>
-            <input type="text" id="split-name-${i}" list="payer-list" placeholder="如：大哥" autocomplete="off" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="如：大哥" autocomplete="off" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
           </div>
           <div style="flex: 1;">
-            <label style="font-size: 11px;">代墊金額 (對應原始幣別)</label>
-            <input type="number" id="split-amount-${i}" placeholder="如：500" inputmode="decimal" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+            <label style="font-size: 11px;">代墊金額</label>
+            <input type="number" id="split-amount-${i}" value="${amountVal}" data-manual="${isManual}"
+              onfocus="this.dataset.old=this.value; this.value='';" 
+              onblur="if(this.value==='') { this.value=this.dataset.old; } else { this.dataset.manual='true'; }"
+              placeholder="如：500" inputmode="decimal" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
           </div>
         </div>`;
       }
@@ -237,6 +262,20 @@
       const amt = document.getElementById('amount-input');
       if (e.target.checked) { amt.removeAttribute('inputmode'); amt.placeholder = '如：999USD 或 90000KRW'; } 
       else { amt.setAttribute('inputmode', 'decimal'); amt.placeholder = '如：999 或 1689'; }
+    });
+
+    // 🌟 在總金額打字時，自動推算尚未手動修改的代墊金額
+    document.getElementById('amount-input').addEventListener('input', () => {
+      if (document.getElementById('split-group').style.display !== 'none') {
+        const avg = getAutoAvg();
+        const count = parseInt(document.getElementById('split-count').value) || 1;
+        for(let i=1; i<=count; i++) {
+          const amtField = document.getElementById(`split-amount-${i}`);
+          if (amtField && amtField.dataset.manual !== "true") {
+            amtField.value = avg;
+          }
+        }
+      }
     });
 
     let currentPhoto = "";
