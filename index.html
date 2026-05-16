@@ -205,14 +205,38 @@
       const type = r[1];
       document.getElementById('type-selector').value = (type === '純記帳') ? '墊付' : type;
       document.getElementById('payForm').item.value = r[2] ? r[2].toString().replace(/^'/, '') : '';
-      document.getElementById('amount-input').value = r[3] || '';
       document.getElementById('payment-input').value = r[4] || '';
       document.getElementById('main-payer').value = r[7] || 'Luke';
 
       let fullNote = r[5] ? r[5].toString().replace(/^'/, '') : '';
+      
+      // 🌟 精準解析外幣，並讓總額完美載回原始字串 (解決紅色警告問題)
+      let foreignMatch = fullNote.match(/外幣:\s*([0-9.]+)\s*([A-Z]+)/);
+      if (foreignMatch) {
+        document.getElementById('amount-input').value = foreignMatch[1] + foreignMatch[2];
+        document.getElementById('currency-toggle').checked = true;
+        document.getElementById('amount-input').removeAttribute('inputmode');
+      } else {
+        document.getElementById('amount-input').value = r[3] || '';
+        document.getElementById('currency-toggle').checked = false;
+        document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
+      }
+
       let noteParts = fullNote.split(' | ');
       let manualNote = "";
+      let selfShareAmt = null;
+
+      // 🌟 精準解析隱藏在備註的「自己負擔 (Luke)」
       for(let p of noteParts) {
+        let selfMatchTWD = p.match(/自己負擔：\$([0-9.]+)/);
+        let selfMatchFor = p.match(/自己負擔外幣:\s*([0-9.]+)\s*[A-Z]+/);
+
+        if (selfMatchFor) {
+           selfShareAmt = selfMatchFor[1];
+        } else if (selfMatchTWD) {
+           selfShareAmt = selfMatchTWD[1];
+        }
+
         if(!p.includes('自己負擔') && !p.includes('代墊') && !p.includes('外幣:')) {
           manualNote += (manualNote ? " | " : "") + p.trim();
         }
@@ -224,14 +248,21 @@
 
       if(isS) {
         let splits = [];
+        
+        // 如果有抓到自己負擔的金額，把他變成 第一順位的 Luke 加回陣列裡
+        if (selfShareAmt && parseFloat(selfShareAmt) > 0) {
+          splits.push({name: 'Luke', amt: selfShareAmt});
+        }
+
         for(let i=8; i<r.length; i++) {
           let cell = r[i] ? r[i].toString() : '';
           if(!cell) continue;
           let match2 = cell.match(/^(.*?)\(([0-9.]+)([A-Z]+)\/\$([0-9.]+)\)$/); 
           let match1 = cell.match(/^(.*?)\(\$([0-9.]+)\)$/); 
-          if(match2) splits.push({name: match2[1], amt: match2[2]});
-          else if(match1) splits.push({name: match1[1], amt: match1[2]});
+          if(match2) splits.push({name: match2[1].trim(), amt: match2[2]});
+          else if(match1) splits.push({name: match1[1].trim(), amt: match1[2]});
         }
+        
         document.getElementById('split-count').value = splits.length || 1;
         renderSplitFields();
 
@@ -316,7 +347,6 @@
       }
     }
 
-    // 🌟 修正點：改為精準除以輸入的人數 (不再 +1)
     function getAutoAvg() {
       const count = parseInt(document.getElementById('split-count').value) || 1;
       const amountInput = document.getElementById('amount-input').value;
@@ -348,11 +378,14 @@
         let isManual = existingData[i] ? existingData[i].manual : false;
         let amountVal = isManual ? existingData[i].amount : avg;
 
+        // 🌟 對象1 點擊自動清空、失去焦點若為空則補回 Luke 的防呆設計
+        let focusEvent = (i === 1) ? `onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"` : "";
+
         html += `
         <div style="display: flex; gap: 15px; margin-top: 10px;">
           <div style="flex: 1;">
             <label style="font-size: 11px;">對象 ${i}</label>
-            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="如：大哥" autocomplete="off" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="如：大哥" autocomplete="off" ${focusEvent} style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
           </div>
           <div style="flex: 1;">
             <label style="font-size: 11px;">金額 (對應原始幣別)</label>
