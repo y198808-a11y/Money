@@ -35,7 +35,7 @@
     #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
     #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444; }
     #history-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
-    #history-list { max-height: 250px; overflow-y: auto; }
+    #history-list { max-height: 250px; overflow-y: auto; padding-right: 5px; }
     .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
     .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
@@ -129,7 +129,7 @@
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
       <div id="status"></div>
     </form>
-    <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 最近 20 筆紀錄</div><div id="history-list"></div></div>
+    <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 歷史紀錄 (向下捲動載入更早紀錄)</div><div id="history-list"></div></div>
   </div>
 
   <div id="custom-modal" class="modal-overlay">
@@ -148,6 +148,10 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
     window.historyData = []; 
+    // 🌟 無限載入功能的參數
+    let historyOffset = 0;
+    let isLoadingHistory = false;
+    let hasMoreHistory = true;
 
     function callAPI(a, d) { 
       return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ source: 'webapp', action: a, data: d || {} }) }); 
@@ -174,19 +178,95 @@
 
     window.onload = function() { setCurrentTime(); refreshCloudHistory(); loadAutocomplete(); };
 
+    // 🌟 更新：首次刷新或重置時讀取前 20 筆
     function refreshCloudHistory() { 
-      callAPI('getHistory').then(res => res.json()).then(h => {
+      historyOffset = 0;
+      hasMoreHistory = true;
+      document.getElementById('history-list').innerHTML = '<div style="text-align:center; padding:10px; color:#888; font-size:12px;">載入中...</div>';
+      callAPI('getHistory', {offset: 0}).then(res => res.json()).then(h => {
         window.historyData = h; 
-        const list = document.getElementById('history-list');
-        list.innerHTML = h.length ? h.map(x => `
-          <div class="history-item">
-            <div><span>${x.text}</span><div class="time">${x.timeStr}</div></div>
-            <div class="action-icons">
-              <i class="fa-solid fa-pen edit-icon" onclick="editRecord(${x.rowNum})"></i>
-              <i class="fa-solid fa-trash-can delete-icon" onclick="openDeleteModal(${x.rowNum}, '${x.text.split('：')[0]}')"></i>
-            </div>
-          </div>`).join('') : '暫無資料';
+        renderHistoryList(h, true);
+        if (h.length < 20) hasMoreHistory = false;
       }).catch(e => console.error("History error:", e));
+    }
+
+    // 🌟 新增：往下捲動時載入更早的 20 筆
+    function loadMoreHistory() {
+      if (isLoadingHistory || !hasMoreHistory) return;
+      isLoadingHistory = true;
+      historyOffset += 20;
+      
+      const list = document.getElementById('history-list');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'history-loading';
+      loadingDiv.style = "text-align:center; padding:10px; color:#888; font-size:12px;";
+      loadingDiv.innerText = "載入更早的紀錄...";
+      list.appendChild(loadingDiv);
+
+      callAPI('getHistory', {offset: historyOffset}).then(res => res.json()).then(h => {
+        document.getElementById('history-loading')?.remove();
+        if (h.length === 0) {
+          hasMoreHistory = false;
+        } else {
+          window.historyData = window.historyData.concat(h);
+          renderHistoryList(h, false);
+          if (h.length < 20) hasMoreHistory = false;
+        }
+        isLoadingHistory = false;
+      }).catch(e => {
+        console.error("History error:", e);
+        document.getElementById('history-loading')?.remove();
+        isLoadingHistory = false;
+      });
+    }
+
+    // 🌟 將 HTML 渲染拉出來獨立，方便無縫追加
+    function renderHistoryList(data, clear) {
+      const list = document.getElementById('history-list');
+      const html = data.map(x => `
+        <div class="history-item">
+          <div><span>${x.text}</span><div class="time">${x.timeStr}</div></div>
+          <div class="action-icons">
+            <i class="fa-solid fa-pen edit-icon" onclick="editRecord(${x.rowNum})"></i>
+            <i class="fa-solid fa-trash-can delete-icon" onclick="openDeleteModal(${x.rowNum}, '${x.text.split('：')[0]}')"></i>
+          </div>
+        </div>`).join('');
+      if (clear) list.innerHTML = html || '暫無資料';
+      else list.innerHTML += html;
+    }
+
+    // 🌟 監聽捲動事件，滑到底部自動載入
+    document.getElementById('history-list').addEventListener('scroll', function() {
+      if (this.scrollTop + this.clientHeight >= this.scrollHeight - 10) {
+        loadMoreHistory();
+      }
+    });
+
+    // 🌟 無痕重置引擎：把表單洗乾淨，但不重整網頁
+    function resetFormUI() {
+      document.getElementById('payForm').reset();
+      setCurrentTime(); 
+      document.getElementById('split-count').value = "1";
+      document.getElementById('split-fields-container').innerHTML = '';
+      document.getElementById('split-summary').innerHTML = '';
+      document.getElementById('split-group').style.display = 'none';
+      document.getElementById('main-payer').value = "Luke";
+      document.getElementById('currency-toggle').checked = false;
+      document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
+      document.getElementById('amount-input').placeholder = '如：999 或 1689';
+      document.getElementById('payment-input').placeholder = '未填預設為現金';
+      currentPhoto = ""; document.getElementById('preview').src = "";
+      document.getElementById('preview').style.display = 'none';
+      document.getElementById('photo-label').innerText = "未選擇";
+      
+      const btn = document.getElementById('submit-btn');
+      if (btn.dataset.editRow) {
+        delete btn.dataset.editRow;
+        btn.innerHTML = "確認送出資料";
+        btn.style.background = "var(--primary)";
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+        if(cancelBtn) cancelBtn.remove();
+      }
     }
 
     function editRecord(rowNum) {
@@ -282,13 +362,14 @@
       btn.style.background = '#e6a23c'; 
       btn.dataset.editRow = rowNum;
 
+      // 🌟 取消編輯時也不再重整頁面
       if(!document.getElementById('cancel-edit-btn')) {
         let cancelBtn = document.createElement('button');
         cancelBtn.id = 'cancel-edit-btn';
         cancelBtn.type = 'button';
         cancelBtn.innerText = '取消編輯';
         cancelBtn.style = 'background: #333; color: #fff; width: 100%; padding: 15px; border-radius: 50px; border: none; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer;';
-        cancelBtn.onclick = () => location.reload();
+        cancelBtn.onclick = () => { resetFormUI(); document.getElementById('status').innerText = "✔️ 已取消編輯"; };
         btn.parentNode.insertBefore(cancelBtn, btn.nextSibling);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -314,11 +395,10 @@
       targetRowToDelete = null; 
     }
 
-    // 🌟 核心修復：在關閉視窗前先記住要刪除的列數，確保傳給後台的資料不會變空
     document.getElementById('confirm-delete-btn').addEventListener('click', () => {
       if (!targetRowToDelete) return;
-      const rowToDel = targetRowToDelete; // 先存起來
-      closeModal(); // 關閉視窗 (此時 targetRowToDelete 會變成 null)
+      const rowToDel = targetRowToDelete; 
+      closeModal(); 
       document.getElementById('status').innerText = "🗑️ 刪除中..."; 
       callAPI('deleteRow', {row: rowToDel}).then(res => res.text()).then(m => { 
         document.getElementById('status').innerText = m; refreshCloudHistory(); 
@@ -455,6 +535,7 @@
       }
     }
 
+    // 🌟 修正：取消頁面自動重整，僅重置表單並刷新列表
     function uploadData() {
       const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
       if(!form.item.value || !form.amount.value || !form.time.value) { status.innerText = "⚠️ 請確認填寫時間、項目與金額"; return; }
@@ -492,10 +573,13 @@
       callAPI('submit', payload)
       .then(res => res.text())
       .then(msg => {
-        status.innerText = msg; 
-        setTimeout(() => location.reload(), 1500); 
+        status.innerText = msg; // 回報訊息將永遠留存
+        resetFormUI(); // 呼叫無痕重置
+        refreshCloudHistory(); // 靜默更新列表
+        loadAutocomplete();
       })
-      .catch(err => { status.innerText = "❌ 連線失敗，請手動下拉更新再試"; console.error(err); btn.disabled = false; });
+      .catch(err => { status.innerText = "❌ 連線失敗，請手動下拉更新再試"; console.error(err); })
+      .finally(() => { btn.disabled = false; });
     }
 
     let startY = 0;
