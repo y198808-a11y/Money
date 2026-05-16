@@ -83,7 +83,7 @@
       <div id="split-group" style="display: none; flex-direction: column; gap: 15px;" class="input-group">
         <div style="display: flex; gap: 15px;">
           <div style="flex: 1;">
-            <label>是誰先買單的？(H欄)</label>
+            <label>是誰先買單的？</label>
             <input type="text" id="main-payer" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
           </div>
           <div style="flex: 1;">
@@ -147,7 +147,7 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
-    window.historyData = []; // 暫存歷史紀錄用於編輯載入
+    window.historyData = []; 
 
     function callAPI(a, d) { 
       return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ source: 'webapp', action: a, data: d || {} }) }); 
@@ -189,13 +189,11 @@
       }).catch(e => console.error("History error:", e));
     }
 
-    // 🌟 核心：精準備用資料載入引擎 (準確度 ~95%)
     function editRecord(rowNum) {
       const rec = window.historyData.find(x => x.rowNum === rowNum);
       if(!rec) return;
       const r = rec.rowData;
 
-      // 1. 時間還原
       const d = new Date(r[0]);
       if (!isNaN(d.getTime())) {
         const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
@@ -204,7 +202,6 @@
         updateTimeDisplay();
       }
 
-      // 2. 基礎欄位還原
       const type = r[1];
       document.getElementById('type-selector').value = (type === '純記帳') ? '墊付' : type;
       document.getElementById('payForm').item.value = r[2] ? r[2].toString().replace(/^'/, '') : '';
@@ -212,7 +209,6 @@
       document.getElementById('payment-input').value = r[4] || '';
       document.getElementById('main-payer').value = r[7] || 'Luke';
 
-      // 3. 備註智慧過濾 (剔除系統生成的文字)
       let fullNote = r[5] ? r[5].toString().replace(/^'/, '') : '';
       let noteParts = fullNote.split(' | ');
       let manualNote = "";
@@ -223,7 +219,6 @@
       }
       document.getElementById('payForm').note.value = manualNote;
 
-      // 4. 墊付明細還原 (使用 Regex 完美萃取)
       const isS = (type === '墊付' || type === '純記帳');
       document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
 
@@ -254,7 +249,6 @@
         document.getElementById('split-fields-container').innerHTML = '';
       }
 
-      // 5. 介面轉換為編輯模式
       const btn = document.getElementById('submit-btn');
       btn.innerHTML = `📝 更新資料 <span style="font-size: 13px;">(覆蓋原紀錄)</span>`;
       btn.style.background = '#e6a23c'; 
@@ -322,11 +316,12 @@
       }
     }
 
+    // 🌟 修正點：改為精準除以輸入的人數 (不再 +1)
     function getAutoAvg() {
       const count = parseInt(document.getElementById('split-count').value) || 1;
       const amountInput = document.getElementById('amount-input').value;
       const rawAmount = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
-      return rawAmount ? Math.round(rawAmount / (count + 1)) : "";
+      return rawAmount ? Math.round(rawAmount / count) : ""; 
     }
 
     function adjustSplitCount(delta) {
@@ -451,7 +446,6 @@
 
       btn.disabled = true; status.innerText = "🚀 資料同步中...";
       
-      // 🌟 送出時附帶編輯的 Row 參數
       const payload = { 
         time: form.time.value, type: form.type.value, item: form.item.value, amount: form.amount.value, 
         payment: form.payment.value, note: form.note.value, photoBase64: currentPhoto, 
@@ -463,7 +457,7 @@
       .then(res => res.text())
       .then(msg => {
         status.innerText = msg; 
-        setTimeout(() => location.reload(), 1500); // 更新成功後自動重整頁面，恢復乾淨狀態
+        setTimeout(() => location.reload(), 1500); 
       })
       .catch(err => { status.innerText = "❌ 連線失敗，請手動下拉更新再試"; console.error(err); btn.disabled = false; });
     }
