@@ -1,216 +1,476 @@
-// 🌟 韋杰本本專屬後台大腦 (支援紀錄修改、舊照片保留)
-var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Ld9KAxbg4WEwylbDqz6ZRxt2YazfKNQR-jIlQWiiVJA/edit?usp=drive_link';
-var DRIVE_FOLDER_ID = '1ugpwqi2cgEpu0ODfewS79rRHfZzMsIsS';
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <title>韋杰本本</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root { --primary: #1a9c39; --water: #00BFFF; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.4); }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
+    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 25px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; position: relative; }
+    h1 { font-size: 28px; margin: 0 0 15px; text-align: center; }
+    .title-water { color: var(--water); margin: 0 5px; }
+    .title-text { color: var(--primary); font-weight: bold; }
+    .input-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; color: #888; }
+    input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
+    input:focus, select:focus { border-color: var(--primary); outline: none; }
+    input[list]::-webkit-calendar-picker-indicator { display: none !important; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+    .photo-btn { background: #333; border: 2px dashed #555; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+    .photo-btn:active { background: #444; }
+    .action-icons { display: flex; align-items: center; gap: 15px; }
+    .edit-icon { color: #888; font-size: 16px; cursor: pointer; transition: color 0.2s; }
+    .edit-icon:active { color: #e6a23c; }
+    .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; }
+    #submit-btn { background: var(--primary); color: #fff; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; position: relative; overflow: hidden; transition: background 0.3s; }
+    #submit-btn:disabled { background: #444 !important; color: #888; cursor: not-allowed; }
+    .ripple { position: absolute; background: var(--wave); border-radius: 50%; transform: scale(0); animation: ripple-animation 0.6s linear; pointer-events: none; }
+    @keyframes ripple-animation { to { transform: scale(4); opacity: 0; } }
+    #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
+    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444; }
+    #history-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
+    #history-list { max-height: 250px; overflow-y: auto; }
+    .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
+    .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-content { background: var(--card); border: 1px solid #444; border-radius: 20px; padding: 25px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: scale(0.9); transition: transform 0.2s; }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    .modal-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+    .modal-text { color: #ccc; font-size: 15px; margin-bottom: 25px; line-height: 1.5; word-break: break-all; }
+    .modal-actions { display: flex; gap: 15px; }
+    .modal-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-cancel { background: #333; color: #fff; }
+    .btn-confirm { background: #1A365D; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="app-card">
+    <h1><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></h1>
+    <form id="payForm">
+      <div class="input-group">
+        <label>交易時間</label>
+        <div style="position: relative;">
+          <input type="text" id="time-display" readonly style="cursor: pointer;">
+          <input type="datetime-local" id="time-input" name="time" required onchange="updateTimeDisplay()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0;">
+        </div>
+      </div>
 
-function doPost(e) {
-  try {
-    var msg = JSON.parse(e.postData.contents);
-    if (msg.source === 'webapp') {
-      if (msg.action === 'submit') return ContentService.createTextOutput(processForm(msg.data)).setMimeType(ContentService.MimeType.TEXT);
-      if (msg.action === 'deleteRow') return ContentService.createTextOutput(deleteByRowWeb(msg.data.row)).setMimeType(ContentService.MimeType.TEXT);
-      if (msg.action === 'getHistory') return ContentService.createTextOutput(JSON.stringify(getCloudHistory())).setMimeType(ContentService.MimeType.JSON);
-      if (msg.action === 'getItems') return ContentService.createTextOutput(JSON.stringify(getAutocompleteItems())).setMimeType(ContentService.MimeType.JSON);
+      <div class="input-group">
+        <label>交易類別</label>
+        <select name="type" id="type-selector">
+          <option value="支出">🌱 支出</option>
+          <option value="收入">🌊 收入</option>
+          <option value="墊付">⚖️ 分帳 / 墊付</option>
+        </select>
+      </div>
+      <div class="input-group"><label>項目內容</label><input type="text" name="item" list="item-list" placeholder="如：飲料、盆栽、加油" autocomplete="off" required><datalist id="item-list"></datalist></div>
+      
+      <div class="input-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="margin:0;">金額 (總額)</label>
+          <label style="margin:0; color:var(--primary); font-size:12px; cursor:pointer;"><input type="checkbox" id="currency-toggle"> 外幣模式</label>
+        </div>
+        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999 或 1689" required autocomplete="off">
+      </div>
+
+      <div id="split-group" style="display: none; flex-direction: column; gap: 15px;" class="input-group">
+        <div style="display: flex; gap: 15px;">
+          <div style="flex: 1;">
+            <label>是誰先買單的？(H欄)</label>
+            <input type="text" id="main-payer" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
+          </div>
+          <div style="flex: 1;">
+            <label>幫幾個人墊付？</label>
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+              <button type="button" onclick="adjustSplitCount(-1)" style="background: #333; color: white; border: none; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">-</button>
+              <input type="number" id="split-count" value="1" min="1" max="10" readonly style="flex: 1; text-align: center; background: #222; border: 1px solid #444; color: white; font-size: 16px; border-radius: 8px; height: 35px; box-sizing: border-box;">
+              <button type="button" onclick="adjustSplitCount(1)" style="background: #333; color: white; border: none; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">+</button>
+            </div>
+          </div>
+        </div>
+        <div id="split-fields-container"></div>
+        <div id="split-summary" style="font-size: 13px; font-weight: bold; text-align: right; margin-top: -5px; transition: color 0.3s;"></div>
+      </div>
+
+      <div class="input-group">
+        <label>付款方式</label>
+        <input type="text" id="payment-input" name="payment" list="payment-list" placeholder="未填預設為現金" autocomplete="off">
+        <datalist id="payment-list"></datalist>
+      </div>
+      
+      <div class="input-group">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px;">
+          <label style="margin: 0;">照片附件 <span style="color:#888;font-size:11px;">(編輯模式下未選則保留舊圖)</span></label>
+          <span id="photo-label" style="font-size: 12px; color: var(--primary);">未選擇</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="photo-btn" style="flex: 1; height: 75px;" onclick="document.getElementById('photoInputCamera').click()">
+            <i class="fa-solid fa-camera" style="font-size: 18px; margin-bottom: 5px;"></i>
+            <span style="font-size: 13px;">直接拍照</span>
+          </div>
+          <div class="photo-btn" style="flex: 1; height: 75px;" onclick="document.getElementById('photoInputGallery').click()">
+            <i class="fa-regular fa-image" style="font-size: 18px; margin-bottom: 5px;"></i>
+            <span style="font-size: 13px;">相簿選取</span>
+          </div>
+        </div>
+        <input type="file" id="photoInputCamera" accept="image/*" capture="camera" style="display:none" onchange="previewAndCompressImage(this)">
+        <input type="file" id="photoInputGallery" accept="image/*" style="display:none" onchange="previewAndCompressImage(this)">
+        <img id="preview">
+      </div>
+
+      <div class="input-group"><label>備註</label><input type="text" name="note" placeholder="補充細節..."></div>
+      <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
+      <div id="status"></div>
+    </form>
+    <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 最近 20 筆紀錄</div><div id="history-list"></div></div>
+  </div>
+
+  <div id="custom-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title"><span class="title-water">💧</span><span class="title-text">系統提示</span><span class="title-water">💧</span></div>
+      <div class="modal-text" id="modal-desc">確定要刪除這筆紀錄嗎？</div>
+      <div class="modal-actions">
+        <button class="modal-btn btn-cancel" onclick="closeModal()">取消</button>
+        <button class="modal-btn btn-confirm" id="confirm-delete-btn">確定刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="payer-list"></datalist>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
+    window.historyData = []; // 暫存歷史紀錄用於編輯載入
+
+    function callAPI(a, d) { 
+      return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ source: 'webapp', action: a, data: d || {} }) }); 
     }
-    return ContentService.createTextOutput("OK").setMimeType(ContentService.MimeType.TEXT);
-  } catch (err) {
-    return ContentService.createTextOutput("Error: " + err.toString()).setMimeType(ContentService.MimeType.TEXT);
-  }
-}
+    
+    function createRipple(e) {
+      const b = e.currentTarget, r = document.createElement("span"), d = Math.max(b.clientWidth, b.clientHeight), rad = d/2;
+      r.style.width = r.style.height = `${d}px`; r.style.left = `${e.clientX - b.offsetLeft - rad}px`; r.style.top = `${e.clientY - b.offsetTop - rad}px`;
+      r.className = "ripple"; const old = b.getElementsByClassName("ripple")[0]; if(old) old.remove(); b.appendChild(r);
+    }
 
-function processForm(data) {
-  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
-  var amountData = parseAmountData(data.amount);
-  if (!amountData) return "❌ 錯誤：找不到金額。";
-  
-  var fileUrl = "";
-  // 🌟 如果是編輯模式且沒有上傳新照片，自動抓取原本試算表上的照片連結
-  var oldFileUrl = "";
-  if (data.editRow && parseInt(data.editRow) > 1) {
-    oldFileUrl = sheet.getRange(parseInt(data.editRow), 7).getValue();
-  }
+    function updateTimeDisplay() {
+      const val = document.getElementById('time-input').value;
+      if(val) document.getElementById('time-display').value = val.replace('T', ' ').replace(/-/g, '/');
+    }
 
-  if (data.photoBase64) {
-    var blob = Utilities.newBlob(Utilities.base64Decode(data.photoBase64.split(',')[1]), "image/jpeg", "收據_" + Utilities.formatDate(new Date(), "GMT+8", "yyyyMMdd_HHmmss") + ".jpg");
-    fileUrl = DriveApp.getFolderById(DRIVE_FOLDER_ID).createFile(blob).getUrl();
-  } else if (oldFileUrl && oldFileUrl.indexOf("http") !== -1) {
-    fileUrl = oldFileUrl; // 沿用舊照片
-  }
-  
-  var recordTimeStr = data.time ? data.time.replace('T', ' ') : Utilities.formatDate(new Date(), "GMT+8", "yyyy-MM-dd HH:mm");
-  var recordType = data.type, recordItem = data.item, recordAmount = amountData.twdAmount;
-  var payment = (data.payment && data.payment.trim() !== "") ? data.payment.trim() : "現金";
-  var baseNote = data.note || "";
-  var sheetPayer = (data.payer && data.payer.trim() !== "") ? data.payer.trim() : "Luke";
-  var returnMsg = "";
-  
-  var sheetRowData = [
-    "'" + recordTimeStr, 
-    recordType,          
-    "'" + recordItem,    
-    recordAmount,        
-    payment,             
-    "",                  
-    fileUrl,             
-    sheetPayer           
-  ];
-  
-  if (data.type === "墊付") {
-    var splits = data.splits || [];
-    if (splits.length > 0) {
-      var totalSplitTwdAmt = 0;
-      var totalSplitOriginAmt = 0;
-      var splitDetails = [];
-      var isSelfPayer = (sheetPayer === "自己" || sheetPayer === "Luke" || sheetPayer === "杰" || sheetPayer.toUpperCase() === "LUKE");
-      
-      for (var j = 0; j < splits.length; j++) {
-        var pName = splits[j].name.trim();
-        var pAmount = splits[j].amount;
-        
-        if (isSelfPayer && (pName.toUpperCase() === "LUKE" || pName === "自己" || pName === "杰")) continue;
-        
-        var cellText = "";
-        var twdAmt = 0;
-        if (amountData.currency !== "TWD") {
-          twdAmt = Math.round(pAmount * amountData.rate);
-          cellText = pName + "(" + pAmount + amountData.currency + "/$" + twdAmt + ")";
-          totalSplitOriginAmt += pAmount;
-        } else {
-          twdAmt = pAmount;
-          cellText = pName + "($" + twdAmt + ")";
-        }
-        
-        sheetRowData.push(cellText); 
-        splitDetails.push(cellText);
-        totalSplitTwdAmt += twdAmt;
+    function setCurrentTime() {
+      const now = new Date();
+      const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0'), mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('time-input').value = `${y}-${m}-${d}T${hh}:${mm}`;
+      document.getElementById('time-display').value = `${y}/${m}/${d} ${hh}:${mm}`;
+    }
+
+    window.onload = function() { setCurrentTime(); refreshCloudHistory(); loadAutocomplete(); };
+
+    function refreshCloudHistory() { 
+      callAPI('getHistory').then(res => res.json()).then(h => {
+        window.historyData = h; 
+        const list = document.getElementById('history-list');
+        list.innerHTML = h.length ? h.map(x => `
+          <div class="history-item">
+            <div><span>${x.text}</span><div class="time">${x.timeStr}</div></div>
+            <div class="action-icons">
+              <i class="fa-solid fa-pen edit-icon" onclick="editRecord(${x.rowNum})"></i>
+              <i class="fa-solid fa-trash-can delete-icon" onclick="openDeleteModal(${x.rowNum}, '${x.text.split('：')[0]}')"></i>
+            </div>
+          </div>`).join('') : '暫無資料';
+      }).catch(e => console.error("History error:", e));
+    }
+
+    // 🌟 核心：精準備用資料載入引擎 (準確度 ~95%)
+    function editRecord(rowNum) {
+      const rec = window.historyData.find(x => x.rowNum === rowNum);
+      if(!rec) return;
+      const r = rec.rowData;
+
+      // 1. 時間還原
+      const d = new Date(r[0]);
+      if (!isNaN(d.getTime())) {
+        const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+        const hh = String(d.getHours()).padStart(2,'0'), mm = String(d.getMinutes()).padStart(2,'0');
+        document.getElementById('time-input').value = `${y}-${m}-${dd}T${hh}:${mm}`;
+        updateTimeDisplay();
       }
-      
-      var myShareTwd = recordAmount - totalSplitTwdAmt;
-      var myShareOrigin = amountData.originAmount - totalSplitOriginAmt;
-      var splitSummaryText = "";
-      var targetListText = splitDetails.length > 0 ? "代墊給：" + splitDetails.join(", ") : "";
-      
-      if (!isSelfPayer) {
-        sheetRowData[1] = "純記帳";
-        sheetRowData[3] = 0; 
-        splitSummaryText = ""; 
-        returnMsg = "⚖️ 幫朋友記帳完成！\n總額：" + (amountData.currency !== "TWD" ? amountData.originAmount + " " + amountData.currency + " (折合台幣 $" + recordAmount + ")" : "$" + recordAmount) + (targetListText ? "\n" + targetListText : "");
+
+      // 2. 基礎欄位還原
+      const type = r[1];
+      document.getElementById('type-selector').value = (type === '純記帳') ? '墊付' : type;
+      document.getElementById('payForm').item.value = r[2] ? r[2].toString().replace(/^'/, '') : '';
+      document.getElementById('amount-input').value = r[3] || '';
+      document.getElementById('payment-input').value = r[4] || '';
+      document.getElementById('main-payer').value = r[7] || 'Luke';
+
+      // 3. 備註智慧過濾 (剔除系統生成的文字)
+      let fullNote = r[5] ? r[5].toString().replace(/^'/, '') : '';
+      let noteParts = fullNote.split(' | ');
+      let manualNote = "";
+      for(let p of noteParts) {
+        if(!p.includes('自己負擔') && !p.includes('代墊') && !p.includes('外幣:')) {
+          manualNote += (manualNote ? " | " : "") + p.trim();
+        }
+      }
+      document.getElementById('payForm').note.value = manualNote;
+
+      // 4. 墊付明細還原 (使用 Regex 完美萃取)
+      const isS = (type === '墊付' || type === '純記帳');
+      document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
+
+      if(isS) {
+        let splits = [];
+        for(let i=8; i<r.length; i++) {
+          let cell = r[i] ? r[i].toString() : '';
+          if(!cell) continue;
+          let match2 = cell.match(/^(.*?)\(([0-9.]+)([A-Z]+)\/\$([0-9.]+)\)$/); 
+          let match1 = cell.match(/^(.*?)\(\$([0-9.]+)\)$/); 
+          if(match2) splits.push({name: match2[1], amt: match2[2]});
+          else if(match1) splits.push({name: match1[1], amt: match1[2]});
+        }
+        document.getElementById('split-count').value = splits.length || 1;
+        renderSplitFields();
+
+        setTimeout(() => {
+          for(let i=0; i<splits.length; i++) {
+            let nInput = document.getElementById(`split-name-${i+1}`);
+            let aInput = document.getElementById(`split-amount-${i+1}`);
+            if(nInput) nInput.value = splits[i].name;
+            if(aInput) { aInput.value = splits[i].amt; aInput.dataset.manual = 'true'; }
+          }
+          calculateSplitSummary();
+        }, 50);
       } else {
-        if (amountData.currency !== "TWD") {
-          splitSummaryText = "自己負擔外幣: " + myShareOrigin + " " + amountData.currency + " (折合台幣 $" + myShareTwd + ")";
-        } else {
-          splitSummaryText = "自己負擔：$" + myShareTwd;
-        }
-        returnMsg = "⚖️ 墊付計算完成！\n總額：" + (amountData.currency !== "TWD" ? amountData.originAmount + " " + amountData.currency + " (折合台幣 $" + recordAmount + ")" : "$" + recordAmount) + (targetListText ? "\n" + targetListText : "") + "\n" + splitSummaryText;
+        document.getElementById('split-count').value = 1;
+        document.getElementById('split-fields-container').innerHTML = '';
+      }
+
+      // 5. 介面轉換為編輯模式
+      const btn = document.getElementById('submit-btn');
+      btn.innerHTML = `📝 更新資料 <span style="font-size: 13px;">(覆蓋原紀錄)</span>`;
+      btn.style.background = '#e6a23c'; 
+      btn.dataset.editRow = rowNum;
+
+      if(!document.getElementById('cancel-edit-btn')) {
+        let cancelBtn = document.createElement('button');
+        cancelBtn.id = 'cancel-edit-btn';
+        cancelBtn.type = 'button';
+        cancelBtn.innerText = '取消編輯';
+        cancelBtn.style = 'background: #333; color: #fff; width: 100%; padding: 15px; border-radius: 50px; border: none; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer;';
+        cancelBtn.onclick = () => location.reload();
+        btn.parentNode.insertBefore(cancelBtn, btn.nextSibling);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function loadAutocomplete() { 
+      callAPI('getItems').then(res => res.json()).then(d => {
+        if(d.items) document.getElementById('item-list').innerHTML = d.items.map(i => `<option value="${i}">`).join('');
+        if(d.payers) document.getElementById('payer-list').innerHTML = d.payers.map(p => `<option value="${p}">`).join('');
+        if(d.payments) document.getElementById('payment-list').innerHTML = d.payments.map(py => `<option value="${py}">`).join('');
+      }).catch(e => console.error("Autocomplete error:", e));
+    }
+
+    let targetRowToDelete = null;
+    function openDeleteModal(rowNum, itemName) {
+      targetRowToDelete = rowNum;
+      document.getElementById('modal-desc').innerText = `確定要將「${itemName}」從紀錄中清除嗎？`;
+      document.getElementById('custom-modal').classList.add('active');
+    }
+    function closeModal() { document.getElementById('custom-modal').classList.remove('active'); targetRowToDelete = null; }
+
+    document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+      if (!targetRowToDelete) return;
+      closeModal(); document.getElementById('status').innerText = "🗑️ 刪除中..."; 
+      callAPI('deleteRow', {row: targetRowToDelete}).then(res => res.text()).then(m => { 
+        document.getElementById('status').innerText = m; refreshCloudHistory(); 
+      }); 
+    });
+
+    function calculateSplitSummary() {
+      if (document.getElementById('split-group').style.display === 'none') return;
+      const amountInput = document.getElementById('amount-input').value;
+      const rawTotal = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
+      
+      let splitSum = 0;
+      const count = parseInt(document.getElementById('split-count').value) || 1;
+      for(let i=1; i<=count; i++) {
+        const amtField = document.getElementById(`split-amount-${i}`);
+        if(amtField && amtField.value) { splitSum += parseFloat(amtField.value) || 0; }
       }
       
-      var finalNote = splitSummaryText;
-      if (amountData.note) finalNote = finalNote ? amountData.note + " | " + finalNote : amountData.note;
-      if (baseNote) finalNote = finalNote ? finalNote + " | " + baseNote : baseNote;
-      sheetRowData[5] = "'" + finalNote;
-    }
-  } else {
-    var finalNote = amountData.note || "";
-    if (baseNote) finalNote = finalNote ? finalNote + " | " + baseNote : baseNote;
-    sheetRowData[5] = "'" + finalNote;
-    returnMsg = (amountData.note ? "💱 匯率換算成功！\n" : "") + "✅ 紀錄成功：$" + recordAmount;
-  }
-  
-  // 🌟 核心：判定是修改還是新增
-  if (data.editRow && parseInt(data.editRow) > 1) {
-    var targetRow = parseInt(data.editRow);
-    var maxCol = Math.max(8, sheet.getLastColumn());
-    sheet.getRange(targetRow, 1, 1, maxCol).clearContent(); // 先把整排淨空，避免舊的代墊人資料殘留
-    sheet.getRange(targetRow, 1, 1, sheetRowData.length).setValues([sheetRowData]);
-    // 讓修改提示更精簡
-    returnMsg = "✏️ 紀錄已成功更新並取代舊資料！\n" + returnMsg.replace(/✅ 紀錄成功：/g, '').replace(/⚖️ 墊付計算完成！\n/g, '').replace(/⚖️ 幫朋友記帳完成！\n/g, '').trim();
-  } else {
-    sheet.appendRow(sheetRowData);
-  }
-  
-  if (data.photoBase64 && !oldFileUrl) returnMsg += "\n📸 已附新照片";
-  else if (oldFileUrl) returnMsg += "\n🖼️ (保留原照片)";
-  
-  return returnMsg;
-}
-
-function getAutocompleteItems() {
-  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
-  var lastRow = sheet.getLastRow();
-  var lastCol = Math.max(8, sheet.getLastColumn()); 
-  if (lastRow <= 1) return { items: [], payers: [], payments: [] };
-  
-  var data = sheet.getRange(Math.max(2, lastRow - 299), 1, Math.min(lastRow - 1, 300), lastCol).getValues();
-  var uniqueItems = [], uniquePayers = [], uniquePayments = [];
-  var seenI = {}, seenP = {}, seenPay = {};
-  
-  for (var i = data.length - 1; i >= 0; i--) {
-    var itm = data[i][2] ? data[i][2].toString().trim() : "";
-    var pay = data[i][4] ? data[i][4].toString().trim() : ""; 
-    
-    if (itm && itm.indexOf("純記帳") === -1 && !seenI[itm]) { seenI[itm] = true; uniqueItems.push(itm); }
-    if (pay && pay !== "現金" && !seenPay[pay]) { seenPay[pay] = true; uniquePayments.push(pay); }
-    
-    var mainPayer = data[i][7] ? data[i][7].toString().trim() : "";
-    if (mainPayer && mainPayer !== "自己" && mainPayer !== "Luke" && mainPayer !== "杰" && !seenP[mainPayer]) { 
-      seenP[mainPayer] = true; uniquePayers.push(mainPayer); 
-    }
-    
-    for (var colIdx = 8; colIdx < lastCol; colIdx++) {
-      var cellData = data[i][colIdx] ? data[i][colIdx].toString().trim() : "";
-      if (cellData) {
-        var match = cellData.match(/^(.*?)\(/); 
-        var pyr = match ? match[1].trim() : cellData;
-        if (pyr && pyr !== "自己" && pyr !== "Luke" && pyr !== "杰" && !seenP[pyr]) { 
-          seenP[pyr] = true; uniquePayers.push(pyr); 
-        }
+      const summaryDiv = document.getElementById('split-summary');
+      if (splitSum > rawTotal) {
+        summaryDiv.innerHTML = `⚠️ 分配總和 ($${splitSum}) 已超過總金額 ($${rawTotal})！`;
+        summaryDiv.style.color = '#ff4d4d'; 
+      } else if (splitSum === rawTotal && rawTotal !== 0) {
+        summaryDiv.innerHTML = `✅ 分配總和與總金額完全相符！`;
+        summaryDiv.style.color = '#1a9c39'; 
+      } else {
+        const myShare = rawTotal - splitSum;
+        summaryDiv.innerHTML = `💡 目前分配加總：$${splitSum} | 剩餘未分配：$${myShare}`;
+        summaryDiv.style.color = '#ffeb3b'; 
       }
     }
-  }
-  return { items: uniqueItems, payers: uniquePayers, payments: uniquePayments };
-}
 
-// 🌟 核心：將整組 Raw Data 傳給前端當成還原資料的素材庫
-function getCloudHistory() {
-  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
-  var lastRow = sheet.getLastRow(), startRow = Math.max(2, lastRow - 19);
-  var lastCol = Math.max(8, sheet.getLastColumn());
-  if (lastRow <= 1) return [];
-  
-  var data = sheet.getRange(startRow, 1, (lastRow - startRow + 1), lastCol).getValues();
-  var result = [];
-  
-  for (var i = 0; i < data.length; i++) {
-    var row = data[i];
-    if (!row[0]) continue;
-    result.push({
-      rowNum: startRow + i,
-      rowData: row, // 傳送整排完整原始資料給前端解析
-      timeStr: Utilities.formatDate(new Date(row[0]), "GMT+8", "MM/dd HH:mm"),
-      text: row[1] + "：" + row[2] + " $" + row[3]
+    function getAutoAvg() {
+      const count = parseInt(document.getElementById('split-count').value) || 1;
+      const amountInput = document.getElementById('amount-input').value;
+      const rawAmount = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
+      return rawAmount ? Math.round(rawAmount / (count + 1)) : "";
+    }
+
+    function adjustSplitCount(delta) {
+      let input = document.getElementById('split-count');
+      let newVal = parseInt(input.value) + delta;
+      if(newVal >= 1 && newVal <= 10) { input.value = newVal; renderSplitFields(); }
+    }
+
+    function renderSplitFields() {
+      const count = parseInt(document.getElementById('split-count').value) || 1;
+      const container = document.getElementById('split-fields-container');
+      const avg = getAutoAvg();
+
+      let existingData = [];
+      for(let i=1; i<=10; i++) {
+        let n = document.getElementById(`split-name-${i}`);
+        let a = document.getElementById(`split-amount-${i}`);
+        if (n) existingData[i] = { name: n.value, amount: a.value, manual: a.dataset.manual === "true" };
+      }
+
+      let html = '';
+      for(let i=1; i<=count; i++) {
+        let nameVal = existingData[i] ? existingData[i].name : (i === 1 ? "Luke" : "");
+        let isManual = existingData[i] ? existingData[i].manual : false;
+        let amountVal = isManual ? existingData[i].amount : avg;
+
+        html += `
+        <div style="display: flex; gap: 15px; margin-top: 10px;">
+          <div style="flex: 1;">
+            <label style="font-size: 11px;">對象 ${i}</label>
+            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="如：大哥" autocomplete="off" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 11px;">金額 (對應原始幣別)</label>
+            <input type="number" id="split-amount-${i}" value="${amountVal}" data-manual="${isManual}"
+              onfocus="this.dataset.old=this.value; this.value='';" 
+              onblur="if(this.value==='') { this.value=this.dataset.old; } else { this.dataset.manual='true'; } calculateSplitSummary();"
+              oninput="this.dataset.manual='true'; calculateSplitSummary();"
+              placeholder="如：500" inputmode="decimal" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+          </div>
+        </div>`;
+      }
+      container.innerHTML = html;
+      calculateSplitSummary();
+    }
+
+    document.getElementById('type-selector').addEventListener('change', e => {
+      const isS = e.target.value === '墊付'; 
+      document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
+      document.getElementById('payment-input').placeholder = isS ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
+      if(isS) {
+        if(document.getElementById('split-fields-container').innerHTML === '') renderSplitFields();
+        calculateSplitSummary();
+      }
     });
-  }
-  return result.reverse();
-}
 
-function deleteByRowWeb(rowNum) {
-  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
-  if (rowNum > sheet.getLastRow() || rowNum < 2) return "⚠️ 資料已不存在。";
-  var item = sheet.getRange(rowNum, 3).getValue(), photoUrl = sheet.getRange(rowNum, 7).getValue();
-  if (photoUrl && photoUrl.indexOf("drive") !== -1) { try { DriveApp.getFileById(photoUrl.match(/[-\w]{25,}/)[0]).setTrashed(true); } catch(e) {} }
-  sheet.deleteRow(rowNum);
-  return "🗑️ 刪除成功：" + item;
-}
+    document.getElementById('currency-toggle').addEventListener('change', e => {
+      const amt = document.getElementById('amount-input');
+      if (e.target.checked) { amt.removeAttribute('inputmode'); amt.placeholder = '如：999USD 或 90000KRW'; } 
+      else { amt.setAttribute('inputmode', 'decimal'); amt.placeholder = '如：999 或 1689'; }
+    });
 
-function parseAmountData(rawStr) {
-  if (!rawStr) return null;
-  var str = rawStr.toString().toUpperCase().replace(/\s/g, '');
-  var currencyMatch = str.match(/[A-Z]+/);
-  var currency = currencyMatch ? currencyMatch[0] : "TWD";
-  var amount = parseFloat(str.replace(/[A-Z]/g, ''));
-  if (isNaN(amount)) return null;
-  if (currency === "TWD") return { twdAmount: amount, currency: "TWD", rate: 1, originAmount: amount, note: "" };
-  try {
-    var rate = JSON.parse(UrlFetchApp.fetch("https://open.er-api.com/v6/latest/" + currency).getContentText()).rates["TWD"];
-    return { twdAmount: Math.round(amount * rate), currency: currency, rate: rate, originAmount: amount, note: "外幣: " + amount + " " + currency + " (匯率" + rate.toFixed(4) + ")" };
-  } catch (e) { return { twdAmount: amount, currency: currency, rate: 1, originAmount: amount, note: "(換算失敗)" }; }
-}
+    document.getElementById('amount-input').addEventListener('input', () => {
+      if (document.getElementById('split-group').style.display !== 'none') {
+        const avg = getAutoAvg();
+        const count = parseInt(document.getElementById('split-count').value) || 1;
+        for(let i=1; i<=count; i++) {
+          const amtField = document.getElementById(`split-amount-${i}`);
+          if (amtField && amtField.dataset.manual !== "true") {
+            amtField.value = avg;
+          }
+        }
+        calculateSplitSummary();
+      }
+    });
+
+    let currentPhoto = "";
+    function previewAndCompressImage(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = e => {
+          var img = new Image();
+          img.onload = () => {
+            var canvas = document.createElement('canvas');
+            var MAX = 1600, w = img.width, h = img.height;
+            if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+            currentPhoto = canvas.toDataURL('image/jpeg', 0.8);
+            const previewImg = document.getElementById('preview');
+            previewImg.src = currentPhoto; previewImg.style.display = 'block'; 
+            document.getElementById('photo-label').innerText = "✅ 照片已就緒";
+          }; img.src = e.target.result;
+        }; reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function uploadData() {
+      const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
+      if(!form.item.value || !form.amount.value || !form.time.value) { status.innerText = "⚠️ 請確認填寫時間、項目與金額"; return; }
+      
+      let splits = [];
+      if (form.type.value === '墊付') {
+        const count = parseInt(document.getElementById('split-count').value) || 1;
+        let splitSum = 0;
+        for(let i=1; i<=count; i++) {
+          const n = document.getElementById(`split-name-${i}`).value.trim();
+          const a = document.getElementById(`split-amount-${i}`).value;
+          if(n && a) {
+            splits.push({ name: n, amount: parseFloat(a) });
+            splitSum += parseFloat(a);
+          }
+        }
+        if(splits.length === 0) { status.innerText = "⚠️ 請至少完整填寫一位對象與金額"; return; }
+        
+        const rawTotal = parseFloat(form.amount.value.replace(/[a-zA-Z]/g, '')) || 0;
+        if (splitSum > rawTotal) {
+          status.innerText = "⚠️ 阻擋送出：分配總和 ($" + splitSum + ") 已超過總金額 ($" + rawTotal + ")！";
+          return;
+        }
+      }
+
+      btn.disabled = true; status.innerText = "🚀 資料同步中...";
+      
+      // 🌟 送出時附帶編輯的 Row 參數
+      const payload = { 
+        time: form.time.value, type: form.type.value, item: form.item.value, amount: form.amount.value, 
+        payment: form.payment.value, note: form.note.value, photoBase64: currentPhoto, 
+        payer: form.payer.value, splits: splits 
+      };
+      if (btn.dataset.editRow) payload.editRow = btn.dataset.editRow;
+
+      callAPI('submit', payload)
+      .then(res => res.text())
+      .then(msg => {
+        status.innerText = msg; 
+        setTimeout(() => location.reload(), 1500); // 更新成功後自動重整頁面，恢復乾淨狀態
+      })
+      .catch(err => { status.innerText = "❌ 連線失敗，請手動下拉更新再試"; console.error(err); btn.disabled = false; });
+    }
+
+    let startY = 0;
+    document.addEventListener('touchstart', e => { if(window.scrollY === 0) startY = e.touches[0].clientY; }, {passive: true});
+    document.addEventListener('touchend', e => { if(window.scrollY === 0 && startY > 0 && e.changedTouches[0].clientY - startY > 150) { document.getElementById('status').innerText = "🔄 更新中..."; setTimeout(() => location.reload(true), 300); } startY = 0; });
+  </script>
+</body>
+</html>
