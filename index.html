@@ -210,7 +210,6 @@
 
       let fullNote = r[5] ? r[5].toString().replace(/^'/, '') : '';
       
-      // 🌟 精準解析外幣，並讓總額完美載回原始字串 (解決紅色警告問題)
       let foreignMatch = fullNote.match(/外幣:\s*([0-9.]+)\s*([A-Z]+)/);
       if (foreignMatch) {
         document.getElementById('amount-input').value = foreignMatch[1] + foreignMatch[2];
@@ -226,7 +225,6 @@
       let manualNote = "";
       let selfShareAmt = null;
 
-      // 🌟 精準解析隱藏在備註的「自己負擔 (Luke)」
       for(let p of noteParts) {
         let selfMatchTWD = p.match(/自己負擔：\$([0-9.]+)/);
         let selfMatchFor = p.match(/自己負擔外幣:\s*([0-9.]+)\s*[A-Z]+/);
@@ -249,7 +247,6 @@
       if(isS) {
         let splits = [];
         
-        // 如果有抓到自己負擔的金額，把他變成 第一順位的 Luke 加回陣列裡
         if (selfShareAmt && parseFloat(selfShareAmt) > 0) {
           splits.push({name: 'Luke', amt: selfShareAmt});
         }
@@ -378,14 +375,14 @@
         let isManual = existingData[i] ? existingData[i].manual : false;
         let amountVal = isManual ? existingData[i].amount : avg;
 
-        // 🌟 對象1 點擊自動清空、失去焦點若為空則補回 Luke 的防呆設計
         let focusEvent = (i === 1) ? `onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"` : "";
 
+        // 🌟 移除 placeholder="如：大哥" 以及 placeholder="如：500" 讓輸入框維持乾淨空白
         html += `
         <div style="display: flex; gap: 15px; margin-top: 10px;">
           <div style="flex: 1;">
             <label style="font-size: 11px;">對象 ${i}</label>
-            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="如：大哥" autocomplete="off" ${focusEvent} style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="" autocomplete="off" ${focusEvent} style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
           </div>
           <div style="flex: 1;">
             <label style="font-size: 11px;">金額 (對應原始幣別)</label>
@@ -393,7 +390,7 @@
               onfocus="this.dataset.old=this.value; this.value='';" 
               onblur="if(this.value==='') { this.value=this.dataset.old; } else { this.dataset.manual='true'; } calculateSplitSummary();"
               oninput="this.dataset.manual='true'; calculateSplitSummary();"
-              placeholder="如：500" inputmode="decimal" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+              placeholder="" inputmode="decimal" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
           </div>
         </div>`;
       }
