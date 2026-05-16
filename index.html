@@ -134,7 +134,7 @@
 
   <div id="custom-modal" class="modal-overlay">
     <div class="modal-content">
-      <div class="modal-title"><span class="title-water">💧</span><span class="title-text">系統提示</span><span class="title-water">💧</span></div>
+      <div class="modal-title"><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></div>
       <div class="modal-text" id="modal-desc">確定要刪除這筆紀錄嗎？</div>
       <div class="modal-actions">
         <button class="modal-btn btn-cancel" onclick="closeModal()">取消</button>
@@ -308,12 +308,19 @@
       document.getElementById('modal-desc').innerText = `確定要將「${itemName}」從紀錄中清除嗎？`;
       document.getElementById('custom-modal').classList.add('active');
     }
-    function closeModal() { document.getElementById('custom-modal').classList.remove('active'); targetRowToDelete = null; }
+    
+    function closeModal() { 
+      document.getElementById('custom-modal').classList.remove('active'); 
+      targetRowToDelete = null; 
+    }
 
+    // 🌟 核心修復：在關閉視窗前先記住要刪除的列數，確保傳給後台的資料不會變空
     document.getElementById('confirm-delete-btn').addEventListener('click', () => {
       if (!targetRowToDelete) return;
-      closeModal(); document.getElementById('status').innerText = "🗑️ 刪除中..."; 
-      callAPI('deleteRow', {row: targetRowToDelete}).then(res => res.text()).then(m => { 
+      const rowToDel = targetRowToDelete; // 先存起來
+      closeModal(); // 關閉視窗 (此時 targetRowToDelete 會變成 null)
+      document.getElementById('status').innerText = "🗑️ 刪除中..."; 
+      callAPI('deleteRow', {row: rowToDel}).then(res => res.text()).then(m => { 
         document.getElementById('status').innerText = m; refreshCloudHistory(); 
       }); 
     });
@@ -377,7 +384,6 @@
 
         let focusEvent = (i === 1) ? `onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"` : "";
 
-        // 🌟 移除 placeholder="如：大哥" 以及 placeholder="如：500" 讓輸入框維持乾淨空白
         html += `
         <div style="display: flex; gap: 15px; margin-top: 10px;">
           <div style="flex: 1;">
