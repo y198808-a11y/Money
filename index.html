@@ -1,100 +1,216 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="manifest.json">
-  <title>韋杰本本</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    :root { --primary: #1a9c39; --water: #00BFFF; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.4); }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
-    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 25px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; position: relative; }
-    h1 { font-size: 28px; margin: 0 0 15px; text-align: center; }
-    .title-water { color: var(--water); margin: 0 5px; }
-    .title-text { color: var(--primary); font-weight: bold; }
-    .input-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 6px; font-size: 13px; color: #888; }
-    input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
-    input:focus, select:focus { border-color: var(--primary); outline: none; }
-    input[list]::-webkit-calendar-picker-indicator { display: none !important; }
-    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
-    .photo-btn { background: #333; border: 2px dashed #555; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
-    .photo-btn:active { background: #444; }
-    .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; padding-left: 15px; }
-    #submit-btn { background: var(--primary); color: #fff; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; position: relative; overflow: hidden; }
-    #submit-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
-    .ripple { position: absolute; background: var(--wave); border-radius: 50%; transform: scale(0); animation: ripple-animation 0.6s linear; pointer-events: none; }
-    @keyframes ripple-animation { to { transform: scale(4); opacity: 0; } }
-    #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
-    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444; }
-    #history-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
-    #history-list { max-height: 250px; overflow-y: auto; }
-    .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
-    .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
-    .modal-overlay.active { display: flex; opacity: 1; }
-    .modal-content { background: var(--card); border: 1px solid #444; border-radius: 20px; padding: 25px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: scale(0.9); transition: transform 0.2s; }
-    .modal-overlay.active .modal-content { transform: scale(1); }
-    .modal-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
-    .modal-text { color: #ccc; font-size: 15px; margin-bottom: 25px; line-height: 1.5; word-break: break-all; }
-    .modal-actions { display: flex; gap: 15px; }
-    .modal-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .btn-cancel { background: #333; color: #fff; }
-    .btn-confirm { background: #1A365D; color: #fff; }
-  </style>
-</head>
-<body>
-  <div class="app-card">
-    <h1><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></h1>
-    <form id="payForm">
-      <div class="input-group">
-        <label>交易時間</label>
-        <div style="position: relative;">
-          <input type="text" id="time-display" readonly style="cursor: pointer;">
-          <input type="datetime-local" id="time-input" name="time" required onchange="updateTimeDisplay()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0;">
-        </div>
-      </div>
+// 🌟 韋杰本本專屬後台大腦 (支援紀錄修改、舊照片保留)
+var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Ld9KAxbg4WEwylbDqz6ZRxt2YazfKNQR-jIlQWiiVJA/edit?usp=drive_link';
+var DRIVE_FOLDER_ID = '1ugpwqi2cgEpu0ODfewS79rRHfZzMsIsS';
 
-      <div class="input-group">
-        <label>交易類別</label>
-        <select name="type" id="type-selector">
-          <option value="支出">🌱 支出</option>
-          <option value="收入">🌊 收入</option>
-          <option value="墊付">⚖️ 分帳 / 墊付</option>
-        </select>
-      </div>
-      <div class="input-group"><label>項目內容</label><input type="text" name="item" list="item-list" placeholder="如：飲料、盆栽、加油" autocomplete="off" required><datalist id="item-list"></datalist></div>
+function doPost(e) {
+  try {
+    var msg = JSON.parse(e.postData.contents);
+    if (msg.source === 'webapp') {
+      if (msg.action === 'submit') return ContentService.createTextOutput(processForm(msg.data)).setMimeType(ContentService.MimeType.TEXT);
+      if (msg.action === 'deleteRow') return ContentService.createTextOutput(deleteByRowWeb(msg.data.row)).setMimeType(ContentService.MimeType.TEXT);
+      if (msg.action === 'getHistory') return ContentService.createTextOutput(JSON.stringify(getCloudHistory())).setMimeType(ContentService.MimeType.JSON);
+      if (msg.action === 'getItems') return ContentService.createTextOutput(JSON.stringify(getAutocompleteItems())).setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput("OK").setMimeType(ContentService.MimeType.TEXT);
+  } catch (err) {
+    return ContentService.createTextOutput("Error: " + err.toString()).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+function processForm(data) {
+  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
+  var amountData = parseAmountData(data.amount);
+  if (!amountData) return "❌ 錯誤：找不到金額。";
+  
+  var fileUrl = "";
+  // 🌟 如果是編輯模式且沒有上傳新照片，自動抓取原本試算表上的照片連結
+  var oldFileUrl = "";
+  if (data.editRow && parseInt(data.editRow) > 1) {
+    oldFileUrl = sheet.getRange(parseInt(data.editRow), 7).getValue();
+  }
+
+  if (data.photoBase64) {
+    var blob = Utilities.newBlob(Utilities.base64Decode(data.photoBase64.split(',')[1]), "image/jpeg", "收據_" + Utilities.formatDate(new Date(), "GMT+8", "yyyyMMdd_HHmmss") + ".jpg");
+    fileUrl = DriveApp.getFolderById(DRIVE_FOLDER_ID).createFile(blob).getUrl();
+  } else if (oldFileUrl && oldFileUrl.indexOf("http") !== -1) {
+    fileUrl = oldFileUrl; // 沿用舊照片
+  }
+  
+  var recordTimeStr = data.time ? data.time.replace('T', ' ') : Utilities.formatDate(new Date(), "GMT+8", "yyyy-MM-dd HH:mm");
+  var recordType = data.type, recordItem = data.item, recordAmount = amountData.twdAmount;
+  var payment = (data.payment && data.payment.trim() !== "") ? data.payment.trim() : "現金";
+  var baseNote = data.note || "";
+  var sheetPayer = (data.payer && data.payer.trim() !== "") ? data.payer.trim() : "Luke";
+  var returnMsg = "";
+  
+  var sheetRowData = [
+    "'" + recordTimeStr, 
+    recordType,          
+    "'" + recordItem,    
+    recordAmount,        
+    payment,             
+    "",                  
+    fileUrl,             
+    sheetPayer           
+  ];
+  
+  if (data.type === "墊付") {
+    var splits = data.splits || [];
+    if (splits.length > 0) {
+      var totalSplitTwdAmt = 0;
+      var totalSplitOriginAmt = 0;
+      var splitDetails = [];
+      var isSelfPayer = (sheetPayer === "自己" || sheetPayer === "Luke" || sheetPayer === "杰" || sheetPayer.toUpperCase() === "LUKE");
       
-      <div class="input-group">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <label style="margin:0;">金額 (總額)</label>
-          <label style="margin:0; color:var(--primary); font-size:12px; cursor:pointer;"><input type="checkbox" id="currency-toggle"> 外幣模式</label>
-        </div>
-        <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999 或 1689" required autocomplete="off">
-      </div>
+      for (var j = 0; j < splits.length; j++) {
+        var pName = splits[j].name.trim();
+        var pAmount = splits[j].amount;
+        
+        if (isSelfPayer && (pName.toUpperCase() === "LUKE" || pName === "自己" || pName === "杰")) continue;
+        
+        var cellText = "";
+        var twdAmt = 0;
+        if (amountData.currency !== "TWD") {
+          twdAmt = Math.round(pAmount * amountData.rate);
+          cellText = pName + "(" + pAmount + amountData.currency + "/$" + twdAmt + ")";
+          totalSplitOriginAmt += pAmount;
+        } else {
+          twdAmt = pAmount;
+          cellText = pName + "($" + twdAmt + ")";
+        }
+        
+        sheetRowData.push(cellText); 
+        splitDetails.push(cellText);
+        totalSplitTwdAmt += twdAmt;
+      }
+      
+      var myShareTwd = recordAmount - totalSplitTwdAmt;
+      var myShareOrigin = amountData.originAmount - totalSplitOriginAmt;
+      var splitSummaryText = "";
+      var targetListText = splitDetails.length > 0 ? "代墊給：" + splitDetails.join(", ") : "";
+      
+      if (!isSelfPayer) {
+        sheetRowData[1] = "純記帳";
+        sheetRowData[3] = 0; 
+        splitSummaryText = ""; 
+        returnMsg = "⚖️ 幫朋友記帳完成！\n總額：" + (amountData.currency !== "TWD" ? amountData.originAmount + " " + amountData.currency + " (折合台幣 $" + recordAmount + ")" : "$" + recordAmount) + (targetListText ? "\n" + targetListText : "");
+      } else {
+        if (amountData.currency !== "TWD") {
+          splitSummaryText = "自己負擔外幣: " + myShareOrigin + " " + amountData.currency + " (折合台幣 $" + myShareTwd + ")";
+        } else {
+          splitSummaryText = "自己負擔：$" + myShareTwd;
+        }
+        returnMsg = "⚖️ 墊付計算完成！\n總額：" + (amountData.currency !== "TWD" ? amountData.originAmount + " " + amountData.currency + " (折合台幣 $" + recordAmount + ")" : "$" + recordAmount) + (targetListText ? "\n" + targetListText : "") + "\n" + splitSummaryText;
+      }
+      
+      var finalNote = splitSummaryText;
+      if (amountData.note) finalNote = finalNote ? amountData.note + " | " + finalNote : amountData.note;
+      if (baseNote) finalNote = finalNote ? finalNote + " | " + baseNote : baseNote;
+      sheetRowData[5] = "'" + finalNote;
+    }
+  } else {
+    var finalNote = amountData.note || "";
+    if (baseNote) finalNote = finalNote ? finalNote + " | " + baseNote : baseNote;
+    sheetRowData[5] = "'" + finalNote;
+    returnMsg = (amountData.note ? "💱 匯率換算成功！\n" : "") + "✅ 紀錄成功：$" + recordAmount;
+  }
+  
+  // 🌟 核心：判定是修改還是新增
+  if (data.editRow && parseInt(data.editRow) > 1) {
+    var targetRow = parseInt(data.editRow);
+    var maxCol = Math.max(8, sheet.getLastColumn());
+    sheet.getRange(targetRow, 1, 1, maxCol).clearContent(); // 先把整排淨空，避免舊的代墊人資料殘留
+    sheet.getRange(targetRow, 1, 1, sheetRowData.length).setValues([sheetRowData]);
+    // 讓修改提示更精簡
+    returnMsg = "✏️ 紀錄已成功更新並取代舊資料！\n" + returnMsg.replace(/✅ 紀錄成功：/g, '').replace(/⚖️ 墊付計算完成！\n/g, '').replace(/⚖️ 幫朋友記帳完成！\n/g, '').trim();
+  } else {
+    sheet.appendRow(sheetRowData);
+  }
+  
+  if (data.photoBase64 && !oldFileUrl) returnMsg += "\n📸 已附新照片";
+  else if (oldFileUrl) returnMsg += "\n🖼️ (保留原照片)";
+  
+  return returnMsg;
+}
 
-      <div id="split-group" style="display: none; flex-direction: column; gap: 15px;" class="input-group">
-        <div style="display: flex; gap: 15px;">
-          <div style="flex: 1;">
-            <label>是誰先買單的？(H欄)</label>
-            <input type="text" id="main-payer" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
-          </div>
-          <div style="flex: 1;">
-            <label>幫幾個人墊付？</label>
-            <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
-              <button type="button" onclick="adjustSplitCount(-1)" style="background: #333; color: white; border: none; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">-</button>
-              <input type="number" id="split-count" value="1" min="1" max="10" readonly style="flex: 1; text-align: center; background: #222; border: 1px solid #444; color: white; font-size: 16px; border-radius: 8px; height: 35px; box-sizing: border-box;">
-              <button type="button" onclick="adjustSplitCount(1)" style="background: #333; color: white; border: none; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">+</button>
-            </div>
-          </div>
-        </div>
-        <div id="split-fields-container"></div>
-        <div id="split-summary" style="font-size: 13px; font-weight: bold; text-align: right; margin-top: -5px; transition: color 0.3s;"></div>
-      </div>
+function getAutocompleteItems() {
+  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
+  var lastRow = sheet.getLastRow();
+  var lastCol = Math.max(8, sheet.getLastColumn()); 
+  if (lastRow <= 1) return { items: [], payers: [], payments: [] };
+  
+  var data = sheet.getRange(Math.max(2, lastRow - 299), 1, Math.min(lastRow - 1, 300), lastCol).getValues();
+  var uniqueItems = [], uniquePayers = [], uniquePayments = [];
+  var seenI = {}, seenP = {}, seenPay = {};
+  
+  for (var i = data.length - 1; i >= 0; i--) {
+    var itm = data[i][2] ? data[i][2].toString().trim() : "";
+    var pay = data[i][4] ? data[i][4].toString().trim() : ""; 
+    
+    if (itm && itm.indexOf("純記帳") === -1 && !seenI[itm]) { seenI[itm] = true; uniqueItems.push(itm); }
+    if (pay && pay !== "現金" && !seenPay[pay]) { seenPay[pay] = true; uniquePayments.push(pay); }
+    
+    var mainPayer = data[i][7] ? data[i][7].toString().trim() : "";
+    if (mainPayer && mainPayer !== "自己" && mainPayer !== "Luke" && mainPayer !== "杰" && !seenP[mainPayer]) { 
+      seenP[mainPayer] = true; uniquePayers.push(mainPayer); 
+    }
+    
+    for (var colIdx = 8; colIdx < lastCol; colIdx++) {
+      var cellData = data[i][colIdx] ? data[i][colIdx].toString().trim() : "";
+      if (cellData) {
+        var match = cellData.match(/^(.*?)\(/); 
+        var pyr = match ? match[1].trim() : cellData;
+        if (pyr && pyr !== "自己" && pyr !== "Luke" && pyr !== "杰" && !seenP[pyr]) { 
+          seenP[pyr] = true; uniquePayers.push(pyr); 
+        }
+      }
+    }
+  }
+  return { items: uniqueItems, payers: uniquePayers, payments: uniquePayments };
+}
 
-      <div class="input-group">
-        <label>付款
+// 🌟 核心：將整組 Raw Data 傳給前端當成還原資料的素材庫
+function getCloudHistory() {
+  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
+  var lastRow = sheet.getLastRow(), startRow = Math.max(2, lastRow - 19);
+  var lastCol = Math.max(8, sheet.getLastColumn());
+  if (lastRow <= 1) return [];
+  
+  var data = sheet.getRange(startRow, 1, (lastRow - startRow + 1), lastCol).getValues();
+  var result = [];
+  
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    if (!row[0]) continue;
+    result.push({
+      rowNum: startRow + i,
+      rowData: row, // 傳送整排完整原始資料給前端解析
+      timeStr: Utilities.formatDate(new Date(row[0]), "GMT+8", "MM/dd HH:mm"),
+      text: row[1] + "：" + row[2] + " $" + row[3]
+    });
+  }
+  return result.reverse();
+}
+
+function deleteByRowWeb(rowNum) {
+  var sheet = SpreadsheetApp.openByUrl(SHEET_URL).getActiveSheet();
+  if (rowNum > sheet.getLastRow() || rowNum < 2) return "⚠️ 資料已不存在。";
+  var item = sheet.getRange(rowNum, 3).getValue(), photoUrl = sheet.getRange(rowNum, 7).getValue();
+  if (photoUrl && photoUrl.indexOf("drive") !== -1) { try { DriveApp.getFileById(photoUrl.match(/[-\w]{25,}/)[0]).setTrashed(true); } catch(e) {} }
+  sheet.deleteRow(rowNum);
+  return "🗑️ 刪除成功：" + item;
+}
+
+function parseAmountData(rawStr) {
+  if (!rawStr) return null;
+  var str = rawStr.toString().toUpperCase().replace(/\s/g, '');
+  var currencyMatch = str.match(/[A-Z]+/);
+  var currency = currencyMatch ? currencyMatch[0] : "TWD";
+  var amount = parseFloat(str.replace(/[A-Z]/g, ''));
+  if (isNaN(amount)) return null;
+  if (currency === "TWD") return { twdAmount: amount, currency: "TWD", rate: 1, originAmount: amount, note: "" };
+  try {
+    var rate = JSON.parse(UrlFetchApp.fetch("https://open.er-api.com/v6/latest/" + currency).getContentText()).rates["TWD"];
+    return { twdAmount: Math.round(amount * rate), currency: currency, rate: rate, originAmount: amount, note: "外幣: " + amount + " " + currency + " (匯率" + rate.toFixed(4) + ")" };
+  } catch (e) { return { twdAmount: amount, currency: currency, rate: 1, originAmount: amount, note: "(換算失敗)" }; }
+}
