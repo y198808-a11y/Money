@@ -35,10 +35,7 @@
     #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
     #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444; }
     #history-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
-    
-    /* 🌟 核心修改：將 250px 拉長為 550px，畫面一次可顯示約 8 筆紀錄 */
     #history-list { max-height: 550px; overflow-y: auto; padding-right: 5px; }
-    
     .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
     .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
@@ -154,6 +151,9 @@
     let historyOffset = 0;
     let isLoadingHistory = false;
     let hasMoreHistory = true;
+    
+    // 🌟 核心防呆：追蹤是否手動修改過時間
+    let hasManualTime = false; 
 
     function callAPI(a, d) { 
       return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ source: 'webapp', action: a, data: d || {} }) }); 
@@ -168,6 +168,7 @@
     function updateTimeDisplay() {
       const val = document.getElementById('time-input').value;
       if(val) document.getElementById('time-display').value = val.replace('T', ' ').replace(/-/g, '/');
+      hasManualTime = true; // 🌟 標記：使用者手動改了時間，鎖定保護
     }
 
     function setCurrentTime() {
@@ -243,6 +244,7 @@
     function resetFormUI() {
       document.getElementById('payForm').reset();
       setCurrentTime(); 
+      hasManualTime = false; // 🌟 標記：表單重置，解除時間鎖定
       document.getElementById('split-count').value = "1";
       document.getElementById('split-fields-container').innerHTML = '';
       document.getElementById('split-summary').innerHTML = '';
@@ -267,6 +269,7 @@
     }
 
     function editRecord(rowNum) {
+      hasManualTime = true; // 🌟 標記：進入編輯模式，鎖定時間防覆蓋
       const rec = window.historyData.find(x => x.rowNum === rowNum);
       if(!rec) return;
       const r = rec.rowData;
@@ -276,7 +279,7 @@
         const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
         const hh = String(d.getHours()).padStart(2,'0'), mm = String(d.getMinutes()).padStart(2,'0');
         document.getElementById('time-input').value = `${y}-${m}-${dd}T${hh}:${mm}`;
-        updateTimeDisplay();
+        document.getElementById('time-display').value = `${y}/${m}/${d} ${hh}:${mm}`;
       }
 
       const type = r[1];
@@ -576,6 +579,13 @@
       .catch(err => { status.innerText = "❌ 連線失敗，請手動下拉更新再試"; console.error(err); })
       .finally(() => { btn.disabled = false; });
     }
+
+    // 🌟 核心：APP 從背景回到前景時，自動抓取最新時間 (如果沒有手動改過的話)
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && !hasManualTime) {
+        setCurrentTime();
+      }
+    });
 
     let startY = 0;
     document.addEventListener('touchstart', e => { if(window.scrollY === 0) startY = e.touches[0].clientY; }, {passive: true});
