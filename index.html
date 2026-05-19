@@ -6,53 +6,72 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
+  
   <link rel="manifest" href="manifest.json">
-  <title>韋杰本本</title>
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="theme-color" content="#D35400">
+  
+  <title>曜明精算</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    :root { --primary: #1a9c39; --water: #00BFFF; --bg: #000; --card: #1a1a1a; --text: #f5f5f5; --wave: rgba(135, 206, 250, 0.4); }
+    /* 🔥 五行火土配色設定 */
+    :root { 
+      --primary: #D35400;   /* 曜石赤橘 (火/土) */
+      --accent: #F1C40F;    /* 黃金燦土 (土) */
+      --bg: #12100E;        /* 暖黑底色 */
+      --card: #1A1816;      /* 卡片底色 */
+      --text: #F5F5F5; 
+      --wave: rgba(211, 84, 0, 0.4); 
+    }
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 20px 20px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; overscroll-behavior-y: contain; }
-    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 25px; box-sizing: border-box; border: 1px solid #333; margin-top: 10px; position: relative; }
+    .app-card { background: var(--card); width: 100%; max-width: 450px; border-radius: 24px; padding: 25px; box-sizing: border-box; border: 1px solid #332B25; margin-top: 10px; position: relative; }
     h1 { font-size: 28px; margin: 0 0 15px; text-align: center; }
-    .title-water { color: var(--water); margin: 0 5px; }
-    .title-text { color: var(--primary); font-weight: bold; }
+    .title-icon { color: var(--primary); margin: 0 5px; }
+    .title-text { color: var(--accent); font-weight: bold; }
     .input-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 6px; font-size: 13px; color: #888; }
-    input[type="text"], input[type="number"], select { width: 100%; background: #222; border: 1px solid #444; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; color: #999; }
+    
+    input[type="text"], input[type="number"], input[type="datetime-local"], select { width: 100%; background: #24211E; border: 1px solid #4A3E35; padding: 14px; border-radius: 12px; color: #fff; font-size: 16px; box-sizing: border-box; }
     input:focus, select:focus { border-color: var(--primary); outline: none; }
     input[list]::-webkit-calendar-picker-indicator { display: none !important; }
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
-    .photo-btn { background: #333; border: 2px dashed #555; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
-    .photo-btn:active { background: #444; }
+    .photo-btn { background: #2E2925; border: 2px dashed #5A4E45; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+    .photo-btn:active { background: #4A3E35; }
+    
     .action-icons { display: flex; align-items: center; gap: 15px; }
     .edit-icon { color: #888; font-size: 16px; cursor: pointer; transition: color 0.2s; }
-    .edit-icon:active { color: #e6a23c; }
-    .delete-icon { color: #1A365D; font-size: 18px; cursor: pointer; }
+    .edit-icon:active { color: var(--accent); }
+    .delete-icon { color: #5C4033; font-size: 18px; cursor: pointer; }
+
     #submit-btn { background: var(--primary); color: #fff; width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; position: relative; overflow: hidden; transition: background 0.3s; }
-    #submit-btn:disabled { background: #444 !important; color: #888; cursor: not-allowed; }
+    #submit-btn:disabled { background: #4A3E35 !important; color: #888; cursor: not-allowed; }
     .ripple { position: absolute; background: var(--wave); border-radius: 50%; transform: scale(0); animation: ripple-animation 0.6s linear; pointer-events: none; }
     @keyframes ripple-animation { to { transform: scale(4); opacity: 0; } }
-    #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--primary); white-space: pre-line; line-height: 1.5; }
-    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #444; }
-    #history-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%; }
+    
+    #status { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; color: var(--accent); white-space: pre-line; line-height: 1.5; }
+    #preview { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; border: 1px solid #4A3E35; }
+    #history-section { margin-top: 20px; border-top: 1px dashed #4A3E35; padding-top: 15px; width: 100%; }
+    
     #history-list { max-height: 550px; overflow-y: auto; padding-right: 5px; }
-    .history-item { background: #222; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
+    
+    .history-item { background: #24211E; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); font-size: 14px; }
     .history-item .time { color: #888; font-size: 11px; margin-top: 3px; }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
     .modal-overlay.active { display: flex; opacity: 1; }
-    .modal-content { background: var(--card); border: 1px solid #444; border-radius: 20px; padding: 25px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: scale(0.9); transition: transform 0.2s; }
+    .modal-content { background: var(--card); border: 1px solid #4A3E35; border-radius: 20px; padding: 25px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9); transform: scale(0.9); transition: transform 0.2s; }
     .modal-overlay.active .modal-content { transform: scale(1); }
     .modal-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
     .modal-text { color: #ccc; font-size: 15px; margin-bottom: 25px; line-height: 1.5; word-break: break-all; }
     .modal-actions { display: flex; gap: 15px; }
     .modal-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
     .btn-cancel { background: #333; color: #fff; }
-    .btn-confirm { background: #1A365D; color: #fff; }
+    .btn-confirm { background: #A04000; color: #fff; }
   </style>
 </head>
 <body>
   <div class="app-card">
-    <h1><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></h1>
+    <h1><span class="title-icon">🔥</span><span class="title-text">曜明精算</span><span class="title-icon">🔥</span></h1>
     <form id="payForm">
       <div class="input-group">
         <label>交易時間</label>
@@ -65,17 +84,17 @@
       <div class="input-group">
         <label>交易類別</label>
         <select name="type" id="type-selector">
-          <option value="支出">🌱 支出</option>
-          <option value="收入">🌊 收入</option>
+          <option value="支出">🔥 支出</option>
+          <option value="收入">💎 收入</option>
           <option value="墊付">⚖️ 分帳 / 墊付</option>
         </select>
       </div>
-      <div class="input-group"><label>項目內容</label><input type="text" name="item" list="item-list" placeholder="如：飲料、盆栽、加油" autocomplete="off" required><datalist id="item-list"></datalist></div>
+      <div class="input-group"><label>項目內容</label><input type="text" name="item" list="item-list" placeholder="如：好市多、加油" autocomplete="off" required><datalist id="item-list"></datalist></div>
       
       <div class="input-group">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <label style="margin:0;">金額 (總額)</label>
-          <label style="margin:0; color:var(--primary); font-size:12px; cursor:pointer;"><input type="checkbox" id="currency-toggle"> 外幣模式</label>
+          <label style="margin:0; color:var(--accent); font-size:12px; cursor:pointer;"><input type="checkbox" id="currency-toggle"> 外幣模式</label>
         </div>
         <input type="text" id="amount-input" name="amount" inputmode="decimal" placeholder="如：999 或 1689" required autocomplete="off">
       </div>
@@ -84,14 +103,14 @@
         <div style="display: flex; gap: 15px;">
           <div style="flex: 1;">
             <label>是誰先買單的？</label>
-            <input type="text" id="main-payer" name="payer" value="Luke" list="payer-list" autocomplete="off" onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';">
+            <input type="text" id="main-payer" name="payer" value="Steve" list="payer-list" autocomplete="off" onfocus="if(this.value==='Steve') this.value='';" onblur="if(this.value.trim()==='') this.value='Steve';">
           </div>
           <div style="flex: 1;">
             <label>幫幾個人墊付？</label>
             <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
-              <button type="button" onclick="adjustSplitCount(-1)" style="background: #333; color: white; border: none; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">-</button>
-              <input type="number" id="split-count" value="1" min="1" max="10" readonly style="flex: 1; text-align: center; background: #222; border: 1px solid #444; color: white; font-size: 16px; border-radius: 8px; height: 35px; box-sizing: border-box;">
-              <button type="button" onclick="adjustSplitCount(1)" style="background: #333; color: white; border: none; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">+</button>
+              <button type="button" onclick="adjustSplitCount(-1)" style="background: #2E2925; color: white; border: 1px solid #5A4E45; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">-</button>
+              <input type="number" id="split-count" value="1" min="1" max="10" readonly style="flex: 1; text-align: center; background: #24211E; border: 1px solid #4A3E35; color: white; font-size: 16px; border-radius: 8px; height: 35px; box-sizing: border-box;">
+              <button type="button" onclick="adjustSplitCount(1)" style="background: #2E2925; color: white; border: 1px solid #5A4E45; border-radius: 8px; width: 30px; height: 35px; font-weight: bold; cursor: pointer;">+</button>
             </div>
           </div>
         </div>
@@ -129,12 +148,12 @@
       <button type="button" id="submit-btn" onclick="createRipple(event); uploadData();">確認送出資料</button>
       <div id="status"></div>
     </form>
-    <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">☁️ 歷史紀錄 (向下捲動載入更早紀錄)</div><div id="history-list"></div></div>
+    <div id="history-section"><div style="color: #888; font-size: 12px; margin-bottom: 10px;">🔥 歷史紀錄 (向下捲動載入更早紀錄)</div><div id="history-list"></div></div>
   </div>
 
   <div id="custom-modal" class="modal-overlay">
     <div class="modal-content">
-      <div class="modal-title"><span class="title-water">💧</span><span class="title-text">韋杰本本</span><span class="title-water">💧</span></div>
+      <div class="modal-title"><span class="title-icon">🔥</span><span class="title-text">系統提示</span><span class="title-icon">🔥</span></div>
       <div class="modal-text" id="modal-desc">確定要刪除這筆紀錄嗎？</div>
       <div class="modal-actions">
         <button class="modal-btn btn-cancel" onclick="closeModal()">取消</button>
@@ -146,12 +165,13 @@
   <datalist id="payer-list"></datalist>
 
   <script>
+    // 🔥 重要：請貼上朋友的_GAS_部署網址
     const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
+    
     window.historyData = []; 
     let historyOffset = 0;
     let isLoadingHistory = false;
     let hasMoreHistory = true;
-    let hasManualTime = false; 
 
     function callAPI(a, d) { 
       return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ source: 'webapp', action: a, data: d || {} }) }); 
@@ -166,7 +186,6 @@
     function updateTimeDisplay() {
       const val = document.getElementById('time-input').value;
       if(val) document.getElementById('time-display').value = val.replace('T', ' ').replace(/-/g, '/');
-      hasManualTime = true; 
     }
 
     function setCurrentTime() {
@@ -178,6 +197,15 @@
     }
 
     window.onload = function() { setCurrentTime(); refreshCloudHistory(); loadAutocomplete(); };
+
+    // 🌟 網頁喚醒偵測：當 App 從背景切回前景時，自動更新時間！
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        if (!document.getElementById('submit-btn').dataset.editRow) {
+          setCurrentTime();
+        }
+      }
+    });
 
     function refreshCloudHistory() { 
       historyOffset = 0;
@@ -242,12 +270,11 @@
     function resetFormUI() {
       document.getElementById('payForm').reset();
       setCurrentTime(); 
-      hasManualTime = false; 
       document.getElementById('split-count').value = "1";
       document.getElementById('split-fields-container').innerHTML = '';
       document.getElementById('split-summary').innerHTML = '';
       document.getElementById('split-group').style.display = 'none';
-      document.getElementById('main-payer').value = "Luke";
+      document.getElementById('main-payer').value = "Steve";
       document.getElementById('currency-toggle').checked = false;
       document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
       document.getElementById('amount-input').placeholder = '如：999 或 1689';
@@ -267,7 +294,6 @@
     }
 
     function editRecord(rowNum) {
-      hasManualTime = true; 
       const rec = window.historyData.find(x => x.rowNum === rowNum);
       if(!rec) return;
       const r = rec.rowData;
@@ -277,15 +303,15 @@
         const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
         const hh = String(d.getHours()).padStart(2,'0'), mm = String(d.getMinutes()).padStart(2,'0');
         document.getElementById('time-input').value = `${y}-${m}-${dd}T${hh}:${mm}`;
-        document.getElementById('time-display').value = `${y}/${m}/${d} ${hh}:${mm}`;
+        updateTimeDisplay();
       }
 
       const type = r[1];
       document.getElementById('type-selector').value = (type === '純記帳') ? '墊付' : type;
       document.getElementById('payForm').item.value = r[2] ? r[2].toString().replace(/^'/, '') : '';
       document.getElementById('payment-input').value = r[4] || '';
-      document.getElementById('main-payer').value = r[7] || 'Luke';
-
+      document.getElementById('main-payer').value = r[7] || 'Steve';
+      
       let fullNote = r[5] ? r[5].toString().replace(/^'/, '') : '';
       
       let foreignMatch = fullNote.match(/外幣:\s*([0-9.]+)\s*([A-Z]+)/);
@@ -302,11 +328,9 @@
       let noteParts = fullNote.split(' | ');
       let manualNote = "";
       let selfShareAmt = null;
-
       for(let p of noteParts) {
         let selfMatchTWD = p.match(/自己負擔：\$([0-9.]+)/);
         let selfMatchFor = p.match(/自己負擔外幣:\s*([0-9.]+)\s*[A-Z]+/);
-
         if (selfMatchFor) {
            selfShareAmt = selfMatchFor[1];
         } else if (selfMatchTWD) {
@@ -321,12 +345,11 @@
 
       const isS = (type === '墊付' || type === '純記帳');
       document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
-
+      
       if(isS) {
         let splits = [];
-        
         if (selfShareAmt && parseFloat(selfShareAmt) > 0) {
-          splits.push({name: 'Luke', amt: selfShareAmt});
+          splits.push({name: 'Steve', amt: selfShareAmt});
         }
 
         for(let i=8; i<r.length; i++) {
@@ -348,7 +371,7 @@
             if(nInput) nInput.value = splits[i].name;
             if(aInput) { aInput.value = splits[i].amt; aInput.dataset.manual = 'true'; }
           }
-          updateAutoSplits();
+          distributeAutoSplits();
         }, 50);
       } else {
         document.getElementById('split-count').value = 1;
@@ -357,7 +380,7 @@
 
       const btn = document.getElementById('submit-btn');
       btn.innerHTML = `📝 更新資料 <span style="font-size: 13px;">(覆蓋原紀錄)</span>`;
-      btn.style.background = '#e6a23c'; 
+      btn.style.background = 'var(--accent)';
       btn.dataset.editRow = rowNum;
 
       if(!document.getElementById('cancel-edit-btn')) {
@@ -388,7 +411,7 @@
     }
     
     function closeModal() { 
-      document.getElementById('custom-modal').classList.remove('active'); 
+      document.getElementById('custom-modal').classList.remove('active');
       targetRowToDelete = null; 
     }
 
@@ -402,73 +425,79 @@
       }); 
     });
 
+    // 🌟 全新智慧分帳鎖定引擎核心計算
+    function distributeAutoSplits() {
+      const amountInput = document.getElementById('amount-input').value;
+      const rawTotal = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
+      const count = parseInt(document.getElementById('split-count').value) || 1;
+
+      let manualSum = 0;
+      let autoFields = [];
+
+      for(let i=1; i<=count; i++) {
+        let field = document.getElementById(`split-amount-${i}`);
+        if(!field) continue;
+        
+        if(field.dataset.manual === "true" && field.value.trim() !== '') {
+          manualSum += parseFloat(field.value) || 0;
+          field.style.border = "1px solid var(--primary)"; // 鎖定狀態發光橘色
+          field.style.color = "var(--primary)";
+        } else {
+          autoFields.push(field);
+          field.style.border = "1px solid #4A3E35"; // 解鎖狀態正常框線
+          field.style.color = "#fff";
+        }
+      }
+
+      let remaining = rawTotal - manualSum;
+      if (remaining < 0) remaining = 0; 
+
+      if(autoFields.length > 0) {
+        let assignedSum = 0;
+        let baseVal = Math.round(remaining / autoFields.length); 
+        
+        for(let i=0; i<autoFields.length; i++) {
+          if (i === autoFields.length - 1) {
+            autoFields[i].value = remaining - assignedSum; // 最後一個人吸收尾數誤差
+          } else {
+            autoFields[i].value = baseVal;
+            assignedSum += baseVal;
+          }
+        }
+      }
+
+      calculateSplitSummary();
+    }
+
     function calculateSplitSummary() {
       if (document.getElementById('split-group').style.display === 'none') return;
       const amountInput = document.getElementById('amount-input').value;
       const rawTotal = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
       
       let splitSum = 0;
+      let lockedCount = 0;
       const count = parseInt(document.getElementById('split-count').value) || 1;
+      
       for(let i=1; i<=count; i++) {
         const amtField = document.getElementById(`split-amount-${i}`);
-        if(amtField && amtField.value) { splitSum += parseFloat(amtField.value) || 0; }
+        if(amtField && amtField.value !== '') { 
+          splitSum += parseFloat(amtField.value) || 0; 
+        }
+        if(amtField && amtField.dataset.manual === "true") lockedCount++;
       }
       
       const summaryDiv = document.getElementById('split-summary');
       if (splitSum > rawTotal) {
-        summaryDiv.innerHTML = `⚠️ 分配總和 ($${splitSum}) 已超過總金額 ($${rawTotal})！`;
+        summaryDiv.innerHTML = `⚠️ 鎖定總和 ($${splitSum}) 已超過總金額 ($${rawTotal})！`;
         summaryDiv.style.color = '#ff4d4d'; 
       } else if (splitSum === rawTotal && rawTotal !== 0) {
-        summaryDiv.innerHTML = `✅ 分配總和與總金額完全相符！`;
-        summaryDiv.style.color = '#1a9c39'; 
+        summaryDiv.innerHTML = `✅ 分配精準無誤！(已鎖定 ${lockedCount}/${count} 人)`;
+        summaryDiv.style.color = 'var(--primary)'; 
       } else {
         const myShare = rawTotal - splitSum;
-        summaryDiv.innerHTML = `💡 目前分配加總：$${splitSum} | 剩餘未分配：$${myShare}`;
-        summaryDiv.style.color = '#ffeb3b'; 
+        summaryDiv.innerHTML = `💡 目前加總：$${splitSum} | 剩餘未分配：$${myShare}`;
+        summaryDiv.style.color = 'var(--accent)'; 
       }
-    }
-
-    // 🌟 核心引擎：智慧判斷鎖定與平分剩餘金額
-    function updateAutoSplits() {
-      if (document.getElementById('split-group').style.display === 'none') return;
-      
-      const amountInput = document.getElementById('amount-input').value;
-      const rawTotal = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
-      const count = parseInt(document.getElementById('split-count').value) || 1;
-      
-      let manualSum = 0;
-      let autoFields = [];
-      
-      // 1. 將欄位分類為「鎖定(手輸)」與「自動」，並加總鎖定金額
-      for(let i=1; i<=count; i++) {
-        const amtField = document.getElementById(`split-amount-${i}`);
-        if (amtField) {
-          if (amtField.dataset.manual === "true" && amtField.value !== "") {
-            manualSum += parseFloat(amtField.value) || 0;
-          } else {
-            autoFields.push(amtField);
-          }
-        }
-      }
-      
-      // 2. 把剩餘金額分給自動欄位
-      if (autoFields.length > 0) {
-        let remaining = rawTotal - manualSum;
-        if (remaining < 0) remaining = 0; // 防止超過時變成負數
-        
-        if (autoFields.length === 1) {
-          // 💡 當只剩下最後一個自動欄位，完全吸收剩餘精準尾數
-          autoFields[0].value = remaining;
-        } else {
-          // 💡 有多個自動欄位時，自動平分
-          let avg = Math.round(remaining / autoFields.length);
-          autoFields.forEach(field => {
-            field.value = avg;
-          });
-        }
-      }
-      
-      calculateSplitSummary();
     }
 
     function adjustSplitCount(delta) {
@@ -485,38 +514,35 @@
       for(let i=1; i<=10; i++) {
         let n = document.getElementById(`split-name-${i}`);
         let a = document.getElementById(`split-amount-${i}`);
-        if (n && a) {
-          existingData[i] = { name: n.value, amount: a.value, manual: a.dataset.manual === "true" };
-        }
+        if (n) existingData[i] = { name: n.value, amount: a.value, manual: a.dataset.manual === "true" };
       }
 
       let html = '';
       for(let i=1; i<=count; i++) {
-        let nameVal = existingData[i] ? existingData[i].name : (i === 1 ? "Luke" : "");
+        let nameVal = existingData[i] ? existingData[i].name : (i === 1 ? "Steve" : "");
         let isManual = existingData[i] ? existingData[i].manual : false;
-        let amountVal = existingData[i] ? existingData[i].amount : ""; // 空著讓 updateAutoSplits 來補
+        let amountVal = existingData[i] ? existingData[i].amount : "";
 
-        let focusEvent = (i === 1) ? `onfocus="if(this.value==='Luke') this.value='';" onblur="if(this.value.trim()==='') this.value='Luke';"` : "";
+        let focusEvent = (i === 1) ? `onfocus="if(this.value==='Steve') this.value='';" onblur="if(this.value.trim()==='') this.value='Steve';"` : "";
 
-        // 🌟 防呆體驗設計：清空格子再點旁邊 = 解鎖該格重新參與平分
         html += `
         <div style="display: flex; gap: 15px; margin-top: 10px;">
           <div style="flex: 1;">
             <label style="font-size: 11px;">對象 ${i}</label>
-            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="" autocomplete="off" ${focusEvent} style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="" autocomplete="off" ${focusEvent} style="width: 100%; background: #24211E; border: 1px solid #4A3E35; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
           </div>
           <div style="flex: 1;">
-            <label style="font-size: 11px;">金額 (對應原始幣別)</label>
+            <label style="font-size: 11px;">金額 <span style="color:#888;font-size:9px;">(清空解鎖)</span></label>
             <input type="number" id="split-amount-${i}" value="${amountVal}" data-manual="${isManual}"
-              onfocus="this.dataset.old=this.value; this.value='';" 
-              onblur="if(this.value==='') { this.dataset.manual='false'; } else { this.dataset.manual='true'; } updateAutoSplits();"
-              oninput="this.dataset.manual='true'; updateAutoSplits();"
-              placeholder="" inputmode="decimal" style="width: 100%; background: #222; border: 1px solid #444; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
+              onfocus="this.select();"
+              oninput="this.dataset.manual='true'; distributeAutoSplits();"
+              onblur="if(this.value.trim()==='') { this.dataset.manual='false'; distributeAutoSplits(); }"
+              placeholder="自動平分" inputmode="decimal" style="width: 100%; background: #24211E; border: 1px solid #4A3E35; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px; transition: all 0.3s;">
           </div>
         </div>`;
       }
       container.innerHTML = html;
-      updateAutoSplits(); // 產生格子後立刻試算
+      distributeAutoSplits();
     }
 
     document.getElementById('type-selector').addEventListener('change', e => {
@@ -525,7 +551,7 @@
       document.getElementById('payment-input').placeholder = isS ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
       if(isS) {
         if(document.getElementById('split-fields-container').innerHTML === '') renderSplitFields();
-        updateAutoSplits();
+        distributeAutoSplits();
       }
     });
 
@@ -535,10 +561,9 @@
       else { amt.setAttribute('inputmode', 'decimal'); amt.placeholder = '如：999 或 1689'; }
     });
 
-    // 總金額變更時，觸發智慧重新試算
     document.getElementById('amount-input').addEventListener('input', () => {
       if (document.getElementById('split-group').style.display !== 'none') {
-        updateAutoSplits();
+        distributeAutoSplits();
       }
     });
 
@@ -556,7 +581,8 @@
             var ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
             currentPhoto = canvas.toDataURL('image/jpeg', 0.8);
             const previewImg = document.getElementById('preview');
-            previewImg.src = currentPhoto; previewImg.style.display = 'block'; 
+            previewImg.src = currentPhoto;
+            previewImg.style.display = 'block'; 
             document.getElementById('photo-label').innerText = "✅ 照片已就緒";
           }; img.src = e.target.result;
         }; reader.readAsDataURL(input.files[0]);
@@ -609,15 +635,9 @@
       .finally(() => { btn.disabled = false; });
     }
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && !hasManualTime) {
-        setCurrentTime();
-      }
-    });
-
     let startY = 0;
     document.addEventListener('touchstart', e => { if(window.scrollY === 0) startY = e.touches[0].clientY; }, {passive: true});
-    document.addEventListener('touchend', e => { if(window.scrollY === 0 && startY > 0 && e.changedTouches[0].clientY - startY > 150) { document.getElementById('status').innerText = "🔄 更新中..."; setTimeout(() => location.reload(true), 300); } startY = 0; });
+    document.addEventListener('touchend', e => { if(window.scrollY === 0 && startY > 0 && e.changedTouches[0].clientY - startY > 150) { document.getElementById('status').innerText = "🔥 能量更新中..."; setTimeout(() => location.reload(true), 300); } startY = 0; });
   </script>
 </body>
 </html>
