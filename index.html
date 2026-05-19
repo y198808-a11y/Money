@@ -16,10 +16,10 @@
   <style>
     /* 🔥 五行火土配色設定 */
     :root { 
-      --primary: #D35400;   /* 曜石赤橘 (火/土) */
-      --accent: #F1C40F;    /* 黃金燦土 (土) */
-      --bg: #12100E;        /* 暖黑底色 */
-      --card: #1A1816;      /* 卡片底色 */
+      --primary: #D35400; 
+      --accent: #F1C40F;
+      --bg: #12100E;
+      --card: #1A1816;
       --text: #F5F5F5; 
       --wave: rgba(211, 84, 0, 0.4); 
     }
@@ -165,8 +165,7 @@
   <datalist id="payer-list"></datalist>
 
   <script>
-    // 🔥 重要：請貼上朋友的_GAS_部署網址
-    const API_URL = "https://script.google.com/macros/s/AKfycbxtlwgM1KT4-04Kj-ZDZX8RydsZITmcFgrkiVNFEvHDknCJedRqT9gsx7GySWUS-BuJ/exec";
+    const API_URL = "請貼上朋友的_GAS_部署網址";
     
     window.historyData = []; 
     let historyOffset = 0;
@@ -198,12 +197,9 @@
 
     window.onload = function() { setCurrentTime(); refreshCloudHistory(); loadAutocomplete(); };
 
-    // 🌟 網頁喚醒偵測：當 App 從背景切回前景時，自動更新時間！
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        if (!document.getElementById('submit-btn').dataset.editRow) {
-          setCurrentTime();
-        }
+      if (document.visibilityState === 'visible' && !document.getElementById('submit-btn').dataset.editRow) {
+        setCurrentTime();
       }
     });
 
@@ -313,73 +309,40 @@
       document.getElementById('main-payer').value = r[7] || 'Steve';
       
       let fullNote = r[5] ? r[5].toString().replace(/^'/, '') : '';
-      
       let foreignMatch = fullNote.match(/外幣:\s*([0-9.]+)\s*([A-Z]+)/);
       if (foreignMatch) {
         document.getElementById('amount-input').value = foreignMatch[1] + foreignMatch[2];
         document.getElementById('currency-toggle').checked = true;
-        document.getElementById('amount-input').removeAttribute('inputmode');
       } else {
         document.getElementById('amount-input').value = r[3] || '';
         document.getElementById('currency-toggle').checked = false;
-        document.getElementById('amount-input').setAttribute('inputmode', 'decimal');
       }
 
-      let noteParts = fullNote.split(' | ');
-      let manualNote = "";
-      let selfShareAmt = null;
-      for(let p of noteParts) {
-        let selfMatchTWD = p.match(/自己負擔：\$([0-9.]+)/);
-        let selfMatchFor = p.match(/自己負擔外幣:\s*([0-9.]+)\s*[A-Z]+/);
-        if (selfMatchFor) {
-           selfShareAmt = selfMatchFor[1];
-        } else if (selfMatchTWD) {
-           selfShareAmt = selfMatchTWD[1];
-        }
-
-        if(!p.includes('自己負擔') && !p.includes('代墊') && !p.includes('外幣:')) {
-          manualNote += (manualNote ? " | " : "") + p.trim();
-        }
+      let splits = [];
+      for(let i=8; i<r.length; i++) {
+        let cell = r[i] ? r[i].toString() : '';
+        if(!cell) continue;
+        let match2 = cell.match(/^(.*?)\(([0-9.]+)([A-Z]+)\/\$([0-9.]+)\)$/); 
+        let match1 = cell.match(/^(.*?)\(\$([0-9.]+)\)$/); 
+        if(match2) splits.push({name: match2[1].trim(), amt: match2[2]});
+        else if(match1) splits.push({name: match1[1].trim(), amt: match1[2]});
       }
-      document.getElementById('payForm').note.value = manualNote;
-
-      const isS = (type === '墊付' || type === '純記帳');
-      document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
       
-      if(isS) {
-        let splits = [];
-        if (selfShareAmt && parseFloat(selfShareAmt) > 0) {
-          splits.push({name: 'Steve', amt: selfShareAmt});
-        }
+      document.getElementById('split-count').value = splits.length || 1;
+      renderSplitFields();
 
-        for(let i=8; i<r.length; i++) {
-          let cell = r[i] ? r[i].toString() : '';
-          if(!cell) continue;
-          let match2 = cell.match(/^(.*?)\(([0-9.]+)([A-Z]+)\/\$([0-9.]+)\)$/); 
-          let match1 = cell.match(/^(.*?)\(\$([0-9.]+)\)$/); 
-          if(match2) splits.push({name: match2[1].trim(), amt: match2[2]});
-          else if(match1) splits.push({name: match1[1].trim(), amt: match1[2]});
+      setTimeout(() => {
+        for(let i=0; i<splits.length; i++) {
+          let nInput = document.getElementById(`split-name-${i+1}`);
+          let aInput = document.getElementById(`split-amount-${i+1}`);
+          if(nInput) nInput.value = splits[i].name;
+          if(aInput) { aInput.value = splits[i].amt; aInput.dataset.manual = 'true'; }
         }
-        
-        document.getElementById('split-count').value = splits.length || 1;
-        renderSplitFields();
-
-        setTimeout(() => {
-          for(let i=0; i<splits.length; i++) {
-            let nInput = document.getElementById(`split-name-${i+1}`);
-            let aInput = document.getElementById(`split-amount-${i+1}`);
-            if(nInput) nInput.value = splits[i].name;
-            if(aInput) { aInput.value = splits[i].amt; aInput.dataset.manual = 'true'; }
-          }
-          distributeAutoSplits();
-        }, 50);
-      } else {
-        document.getElementById('split-count').value = 1;
-        document.getElementById('split-fields-container').innerHTML = '';
-      }
+        distributeAutoSplits();
+      }, 50);
 
       const btn = document.getElementById('submit-btn');
-      btn.innerHTML = `📝 更新資料 <span style="font-size: 13px;">(覆蓋原紀錄)</span>`;
+      btn.innerHTML = `📝 更新資料 (覆蓋原紀錄)`;
       btn.style.background = 'var(--accent)';
       btn.dataset.editRow = rowNum;
 
@@ -403,241 +366,77 @@
       }).catch(e => console.error("Autocomplete error:", e));
     }
 
-    let targetRowToDelete = null;
-    function openDeleteModal(rowNum, itemName) {
-      targetRowToDelete = rowNum;
-      document.getElementById('modal-desc').innerText = `確定要將「${itemName}」從紀錄中清除嗎？`;
-      document.getElementById('custom-modal').classList.add('active');
-    }
-    
-    function closeModal() { 
-      document.getElementById('custom-modal').classList.remove('active');
-      targetRowToDelete = null; 
-    }
-
-    document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-      if (!targetRowToDelete) return;
-      const rowToDel = targetRowToDelete; 
-      closeModal(); 
-      document.getElementById('status').innerText = "🗑️ 刪除中..."; 
-      callAPI('deleteRow', {row: rowToDel}).then(res => res.text()).then(m => { 
-        document.getElementById('status').innerText = m; refreshCloudHistory(); 
-      }); 
-    });
-
-    // 🌟 全新智慧分帳鎖定引擎核心計算
     function distributeAutoSplits() {
       const amountInput = document.getElementById('amount-input').value;
       const rawTotal = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
       const count = parseInt(document.getElementById('split-count').value) || 1;
 
-      let manualSum = 0;
-      let autoFields = [];
-
+      let manualSum = 0, autoFields = [];
       for(let i=1; i<=count; i++) {
         let field = document.getElementById(`split-amount-${i}`);
         if(!field) continue;
-        
         if(field.dataset.manual === "true" && field.value.trim() !== '') {
           manualSum += parseFloat(field.value) || 0;
-          field.style.border = "1px solid var(--primary)"; // 鎖定狀態發光橘色
-          field.style.color = "var(--primary)";
+          field.style.border = "2px solid var(--primary)";
         } else {
           autoFields.push(field);
-          field.style.border = "1px solid #4A3E35"; // 解鎖狀態正常框線
-          field.style.color = "#fff";
+          field.style.border = "1px solid #4A3E35";
         }
       }
 
-      let remaining = rawTotal - manualSum;
-      if (remaining < 0) remaining = 0; 
-
+      let remaining = Math.max(0, rawTotal - manualSum);
       if(autoFields.length > 0) {
-        let assignedSum = 0;
-        let baseVal = Math.round(remaining / autoFields.length); 
-        
-        for(let i=0; i<autoFields.length; i++) {
-          if (i === autoFields.length - 1) {
-            autoFields[i].value = remaining - assignedSum; // 最後一個人吸收尾數誤差
-          } else {
-            autoFields[i].value = baseVal;
-            assignedSum += baseVal;
-          }
-        }
+        let baseVal = Math.floor(remaining / autoFields.length);
+        autoFields.forEach((f, i) => {
+          if (i === autoFields.length - 1) f.value = remaining - (baseVal * (autoFields.length - 1));
+          else f.value = baseVal;
+        });
       }
-
       calculateSplitSummary();
     }
 
     function calculateSplitSummary() {
-      if (document.getElementById('split-group').style.display === 'none') return;
       const amountInput = document.getElementById('amount-input').value;
       const rawTotal = parseFloat(amountInput.replace(/[a-zA-Z]/g, '')) || 0;
-      
       let splitSum = 0;
-      let lockedCount = 0;
       const count = parseInt(document.getElementById('split-count').value) || 1;
-      
       for(let i=1; i<=count; i++) {
         const amtField = document.getElementById(`split-amount-${i}`);
-        if(amtField && amtField.value !== '') { 
-          splitSum += parseFloat(amtField.value) || 0; 
-        }
-        if(amtField && amtField.dataset.manual === "true") lockedCount++;
+        if(amtField && amtField.value !== '') splitSum += parseFloat(amtField.value) || 0;
       }
-      
       const summaryDiv = document.getElementById('split-summary');
-      if (splitSum > rawTotal) {
-        summaryDiv.innerHTML = `⚠️ 鎖定總和 ($${splitSum}) 已超過總金額 ($${rawTotal})！`;
-        summaryDiv.style.color = '#ff4d4d'; 
-      } else if (splitSum === rawTotal && rawTotal !== 0) {
-        summaryDiv.innerHTML = `✅ 分配精準無誤！(已鎖定 ${lockedCount}/${count} 人)`;
-        summaryDiv.style.color = 'var(--primary)'; 
-      } else {
-        const myShare = rawTotal - splitSum;
-        summaryDiv.innerHTML = `💡 目前加總：$${splitSum} | 剩餘未分配：$${myShare}`;
-        summaryDiv.style.color = 'var(--accent)'; 
-      }
+      if (Math.abs(splitSum - rawTotal) < 0.1) summaryDiv.innerHTML = `✅ 分配精準無誤！`, summaryDiv.style.color = 'var(--primary)';
+      else if (splitSum > rawTotal) summaryDiv.innerHTML = `⚠️ 超出總額！`, summaryDiv.style.color = '#ff4d4d';
+      else summaryDiv.innerHTML = `💡 目前加總：$${splitSum} | 剩餘：$${rawTotal - splitSum}`, summaryDiv.style.color = 'var(--accent)';
     }
 
     function adjustSplitCount(delta) {
       let input = document.getElementById('split-count');
-      let newVal = parseInt(input.value) + delta;
-      if(newVal >= 1 && newVal <= 10) { input.value = newVal; renderSplitFields(); }
+      let newVal = Math.max(1, Math.min(10, parseInt(input.value) + delta));
+      input.value = newVal; renderSplitFields();
     }
 
     function renderSplitFields() {
       const count = parseInt(document.getElementById('split-count').value) || 1;
       const container = document.getElementById('split-fields-container');
-
-      let existingData = [];
+      let existing = [];
       for(let i=1; i<=10; i++) {
-        let n = document.getElementById(`split-name-${i}`);
-        let a = document.getElementById(`split-amount-${i}`);
-        if (n) existingData[i] = { name: n.value, amount: a.value, manual: a.dataset.manual === "true" };
+        let n = document.getElementById(`split-name-${i}`), a = document.getElementById(`split-amount-${i}`);
+        if (n) existing[i] = { name: n.value, amount: a.value, manual: a.dataset.manual === "true" };
       }
-
       let html = '';
       for(let i=1; i<=count; i++) {
-        let nameVal = existingData[i] ? existingData[i].name : (i === 1 ? "Steve" : "");
-        let isManual = existingData[i] ? existingData[i].manual : false;
-        let amountVal = existingData[i] ? existingData[i].amount : "";
-
-        let focusEvent = (i === 1) ? `onfocus="if(this.value==='Steve') this.value='';" onblur="if(this.value.trim()==='') this.value='Steve';"` : "";
-
+        let n = existing[i]?.name || (i === 1 ? "Steve" : "");
+        let m = existing[i]?.manual || false;
         html += `
         <div style="display: flex; gap: 15px; margin-top: 10px;">
-          <div style="flex: 1;">
-            <label style="font-size: 11px;">對象 ${i}</label>
-            <input type="text" id="split-name-${i}" value="${nameVal}" list="payer-list" placeholder="" autocomplete="off" ${focusEvent} style="width: 100%; background: #24211E; border: 1px solid #4A3E35; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px;">
-          </div>
-          <div style="flex: 1;">
-            <label style="font-size: 11px;">金額 <span style="color:#888;font-size:9px;">(清空解鎖)</span></label>
-            <input type="number" id="split-amount-${i}" value="${amountVal}" data-manual="${isManual}"
-              onfocus="this.select();"
-              oninput="this.dataset.manual='true'; distributeAutoSplits();"
-              onblur="if(this.value.trim()==='') { this.dataset.manual='false'; distributeAutoSplits(); }"
-              placeholder="自動平分" inputmode="decimal" style="width: 100%; background: #24211E; border: 1px solid #4A3E35; padding: 12px; border-radius: 12px; color: #fff; box-sizing: border-box; margin-top: 4px; transition: all 0.3s;">
-          </div>
+          <div style="flex: 1;"><label style="font-size:11px;">對象 ${i}</label><input type="text" id="split-name-${i}" value="${n}" list="payer-list" style="padding:10px;"></div>
+          <div style="flex: 1;"><label style="font-size:11px;">金額 (自動平分)</label><input type="number" id="split-amount-${i}" value="${existing[i]?.amount || ''}" data-manual="${m}" oninput="this.dataset.manual='true'; distributeAutoSplits();" onblur="if(this.value===''){this.dataset.manual='false'; distributeAutoSplits();}" style="padding:10px;"></div>
         </div>`;
       }
       container.innerHTML = html;
       distributeAutoSplits();
     }
-
-    document.getElementById('type-selector').addEventListener('change', e => {
-      const isS = e.target.value === '墊付'; 
-      document.getElementById('split-group').style.display = isS ? 'flex' : 'none';
-      document.getElementById('payment-input').placeholder = isS ? '未填預設現金 (朋友墊付不限制)' : '未填預設為現金';
-      if(isS) {
-        if(document.getElementById('split-fields-container').innerHTML === '') renderSplitFields();
-        distributeAutoSplits();
-      }
-    });
-
-    document.getElementById('currency-toggle').addEventListener('change', e => {
-      const amt = document.getElementById('amount-input');
-      if (e.target.checked) { amt.removeAttribute('inputmode'); amt.placeholder = '如：999USD 或 90000KRW'; } 
-      else { amt.setAttribute('inputmode', 'decimal'); amt.placeholder = '如：999 或 1689'; }
-    });
-
-    document.getElementById('amount-input').addEventListener('input', () => {
-      if (document.getElementById('split-group').style.display !== 'none') {
-        distributeAutoSplits();
-      }
-    });
-
-    let currentPhoto = "";
-    function previewAndCompressImage(input) {
-      if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = e => {
-          var img = new Image();
-          img.onload = () => {
-            var canvas = document.createElement('canvas');
-            var MAX = 1600, w = img.width, h = img.height;
-            if (w > h) { if (w > MAX) { h *= MAX/w; w = MAX; } } else { if (h > MAX) { w *= MAX/h; h = MAX; } }
-            canvas.width = w; canvas.height = h;
-            var ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-            currentPhoto = canvas.toDataURL('image/jpeg', 0.8);
-            const previewImg = document.getElementById('preview');
-            previewImg.src = currentPhoto;
-            previewImg.style.display = 'block'; 
-            document.getElementById('photo-label').innerText = "✅ 照片已就緒";
-          }; img.src = e.target.result;
-        }; reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    function uploadData() {
-      const btn = document.getElementById('submit-btn'), status = document.getElementById('status'), form = document.getElementById('payForm');
-      if(!form.item.value || !form.amount.value || !form.time.value) { status.innerText = "⚠️ 請確認填寫時間、項目與金額"; return; }
-      
-      let splits = [];
-      if (form.type.value === '墊付') {
-        const count = parseInt(document.getElementById('split-count').value) || 1;
-        let splitSum = 0;
-        for(let i=1; i<=count; i++) {
-          const n = document.getElementById(`split-name-${i}`).value.trim();
-          const a = document.getElementById(`split-amount-${i}`).value;
-          if(n && a) {
-            splits.push({ name: n, amount: parseFloat(a) });
-            splitSum += parseFloat(a);
-          }
-        }
-        if(splits.length === 0) { status.innerText = "⚠️ 請至少完整填寫一位對象與金額"; return; }
-        
-        const rawTotal = parseFloat(form.amount.value.replace(/[a-zA-Z]/g, '')) || 0;
-        if (splitSum > rawTotal) {
-          status.innerText = "⚠️ 阻擋送出：分配總和 ($" + splitSum + ") 已超過總金額 ($" + rawTotal + ")！";
-          return;
-        }
-      }
-
-      btn.disabled = true; status.innerText = "🚀 資料同步中...";
-      
-      const payload = { 
-        time: form.time.value, type: form.type.value, item: form.item.value, amount: form.amount.value, 
-        payment: form.payment.value, note: form.note.value, photoBase64: currentPhoto, 
-        payer: form.payer.value, splits: splits 
-      };
-      if (btn.dataset.editRow) payload.editRow = btn.dataset.editRow;
-
-      callAPI('submit', payload)
-      .then(res => res.text())
-      .then(msg => {
-        status.innerText = msg; 
-        resetFormUI(); 
-        refreshCloudHistory(); 
-        loadAutocomplete();
-      })
-      .catch(err => { status.innerText = "❌ 連線失敗，請手動下拉更新再試"; console.error(err); })
-      .finally(() => { btn.disabled = false; });
-    }
-
-    let startY = 0;
-    document.addEventListener('touchstart', e => { if(window.scrollY === 0) startY = e.touches[0].clientY; }, {passive: true});
-    document.addEventListener('touchend', e => { if(window.scrollY === 0 && startY > 0 && e.changedTouches[0].clientY - startY > 150) { document.getElementById('status').innerText = "🔥 能量更新中..."; setTimeout(() => location.reload(true), 300); } startY = 0; });
   </script>
 </body>
 </html>
